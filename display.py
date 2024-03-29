@@ -94,3 +94,11 @@ class Ui_MainWindow(object):
         self.connect_button.setText(_translate("MainWindow", "Bật Bluetooth"))
         self.accept_button.setText(_translate("MainWindow", "Đồng ý"))
         self.deny_button.setText(_translate("MainWindow", "Từ chối"))
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    w = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(w)
+    w.show()
+    sys.exit(app.exec())

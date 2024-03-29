@@ -5,9 +5,9 @@ import sys
 import mysql.connector
 import datetime
 import bluetooth
+import display
 
-
-class loginUi(QMainWindow): #login window
+class loginUi(display.Ui_MainWindow): #login window
     def __init__(self):
         super(loginUi,self).__init__()
         uic.loadUi('display.ui',self) #goi ui chuong trinh
