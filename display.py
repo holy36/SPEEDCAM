@@ -8,6 +8,7 @@
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
+import bluetooth
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -94,6 +95,16 @@ class Ui_MainWindow(object):
         self.connect_button.setText(_translate("MainWindow", "Bật Bluetooth"))
         self.accept_button.setText(_translate("MainWindow", "Đồng ý"))
         self.deny_button.setText(_translate("MainWindow", "Từ chối"))
+        self.connect_button.clicked.connect(self.connect)
+
+
+    def connect(self):
+        print("Đang tìm kiếm các thiết bị Bluetooth xung quanh...")
+        nearby_devices = bluetooth.discover_devices(duration=8, lookup_names=True, flush_cache=True)
+        print("Các thiết bị Bluetooth xung quanh:")
+        for addr, name in nearby_devices:
+            print(f"{addr} - {name}")
+        self.connect_button.setStyleSheet("background-color: green; color: white;")
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
