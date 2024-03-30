@@ -1,0 +1,4 @@
+.Python
+build/
+develop-eggs/
+dist/
