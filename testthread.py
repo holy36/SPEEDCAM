@@ -151,11 +151,23 @@ class Ui_MainWindow(object):
         self.thread[2] = ThreadClass(index=1,mac_id=device_address)
         self.thread[2].start()
         self.thread[2].signal.connect(self.my_function)
+        self.thread[2].connect_status.connect(self.status_change)
     def my_function(self, msg):
         i = self.MainWindow.sender().index
         self.image_label.setText(msg)
 
-        
+    def status_change(self,status):
+        if status==1:
+            print("kfl;ưenr;n")
+            self.connect_button.setMaximumWidth(0)
+        if status==0:
+            print("00000n")
+            self.connect_button.setMaximumWidth(9999999)
+        # self.thread[2].connect_status.emit(3)
+        print("eeee")
+
+        pass
+
     def reportProgress(self, n):
         self.device_list.addItem(n)
 
@@ -190,7 +202,7 @@ class Ui_MainWindow(object):
             lambda: self.connect_button.setStyleSheet("background-color: #66CDAA; color: white;")
         )
         self.thread[1].finished.connect(
-            lambda: self.connect_button.setText("Đã bật Bluetooth!")
+            lambda: self.connect_button.setText("Đã bật Bluetooth! Nhấn để quét Bluetooth lại!")
         )
         # Sau khi tìm thấy các thiết bị, cập nhật lại màu của nút thành màu xanh lá cây
         
@@ -199,6 +211,7 @@ class Ui_MainWindow(object):
 
 class ThreadClass(QtCore.QThread):
     signal = pyqtSignal(str)
+    connect_status = pyqtSignal(int)
 
     def __init__(self, index=0, mac_id = ""):
         super().__init__()
@@ -206,31 +219,35 @@ class ThreadClass(QtCore.QThread):
         self.mac_id = mac_id
 
     def run(self):
+        self.connect_status.emit(1)
         print('Starting thread...', self.index,self.mac_id)
         counter = 0
-        while True:
             
-            client = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
-            client.connect((self.mac_id, 4))
+        client = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
+        client.connect((self.mac_id, 4))
 
-            print(f"Connected!")
+        print(f"Connected!")
 
-            try:
-                while True:
-                    message = input("Enter message: ")
-                    client.send(message.encode('utf-8'))
-                    data = client.recv(1024)
-                    if not data:
-                        break
-                    print(f"Received: {data.decode('utf-8')}")
-                    self.signal.emit(f"{data.decode('utf-8')}")
+        try:
+            self.connect_status.emit(1)
+            while True:
+                message = input("Enter message: ")
+                client.send(message.encode('utf-8'))
+                data = client.recv(1024)
+                if not data:
+                    break
+                print(f"Received: {data.decode('utf-8')}")
+                print(self.connect_status)
+                self.signal.emit(f"{data.decode('utf-8')}")
 
-            except OSError:
-                pass
+        except OSError:
+            self.connect_status.emit(0)
+            pass
 
-            print("Disconnected")
+        print("Disconnected")
+        self.connect_status.emit(0)
 
-            client.close()
+        client.close()
 
     def stop(self):
         print('Stopping thread...', self.index)

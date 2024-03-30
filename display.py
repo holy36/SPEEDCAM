@@ -7,42 +7,6 @@
 
 
 from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtCore import QCoreApplication
-from bluetooth import Protocols
-import bluetooth
-import sys
-from time import sleep
-
-from PyQt6.QtCore import QObject, QThread, pyqtSignal
-
-class Worker(QObject):
-    finished = pyqtSignal()
-    progress = pyqtSignal(str)
-
-    def run(self):
-        """Long-running task."""
-        print("Đang tìm kiếm các thiết bị Bluetooth xung quanh...")
-        nearby_devices = bluetooth.discover_devices(duration=8, lookup_names=True, flush_cache=True)
-        print("Các thiết bị Bluetooth xung quanh:")
-        for addr, name in nearby_devices:
-            # self.device_list.addItem(f"{addr} - {name}")
-            self.progress.emit(f"{addr} - {name}")
-            print(f"{addr} - {name}")
-        self.finished.emit()
-    def connect(self,id):
-        option = id
-        device_address = option[:17]
-        port = 1  # RFCOMM port number
-        # try:
-        print(f"Đang kết nối đến thiết bị có địa chỉ {device_address}...")
-        sock = bluetooth.BluetoothSocket(Protocols.RFCOMM)
-        sock.connect((device_address, port))
-        while(1):
-            pass
-        self.finished.emit()
-        # except Exception as e:
-        #     print("Kết nối thất bại")
-        #     return None
 
 
 class Ui_MainWindow(object):
@@ -74,9 +38,16 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.connect_button = QtWidgets.QPushButton(parent=self.centralwidget)
         self.connect_button.setMinimumSize(QtCore.QSize(0, 40))
+        self.connect_button.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.connect_button.setObjectName("connect_button")
         self.horizontalLayout_2.addWidget(self.connect_button)
+        self.cancel_button = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.cancel_button.setMinimumSize(QtCore.QSize(0, 40))
+        self.cancel_button.setMaximumSize(QtCore.QSize(0, 16777215))
+        self.cancel_button.setObjectName("cancel_button")
+        self.horizontalLayout_2.addWidget(self.cancel_button)
         self.device_list = QtWidgets.QComboBox(parent=self.centralwidget)
+        self.device_list.setEnabled(True)
         self.device_list.setMinimumSize(QtCore.QSize(0, 40))
         self.device_list.setCurrentText("")
         self.device_list.setObjectName("device_list")
@@ -90,9 +61,10 @@ class Ui_MainWindow(object):
         self.deny_button.setObjectName("deny_button")
         self.horizontalLayout_2.addWidget(self.deny_button)
         self.horizontalLayout_2.setStretch(0, 4)
-        self.horizontalLayout_2.setStretch(1, 2)
+        self.horizontalLayout_2.setStretch(1, 4)
         self.horizontalLayout_2.setStretch(2, 2)
         self.horizontalLayout_2.setStretch(3, 2)
+        self.horizontalLayout_2.setStretch(4, 2)
         self.gridLayout.addLayout(self.horizontalLayout_2, 2, 3, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
@@ -128,119 +100,6 @@ class Ui_MainWindow(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">Thiet bi: 015737 Kiem dinh den 10_2020</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">Don vi van hanh: Phong Canh sat Giao thong Cong an tinh Ha Tinh</span></p></body></html>"))
         self.connect_button.setText(_translate("MainWindow", "Bật Bluetooth"))
+        self.cancel_button.setText(_translate("MainWindow", "Đã kết nối Bluetooth! Nhấn để hủy"))
         self.accept_button.setText(_translate("MainWindow", "Đồng ý"))
         self.deny_button.setText(_translate("MainWindow", "Từ chối"))
-        self.connect_button.clicked.connect(self.connect)
-        self.device_list.setPlaceholderText(_translate("MainWindow", "Danh sách thiết bị Bluetooth"))
-        self.device_list.activated.connect(self.device_list_select)
-        self.device_list.addItem("00:E1:33:13:D4:CE")
-        # self.device_list.setDisabled(1)
-        # self.accept_button.setDisabled(1)
-        # self.deny_button.setDisabled(1)
-
-        
-    def reportProgress(self, n):
-        self.device_list.addItem(n)
-
-    def connect(self):
-        # Thiết lập màu của nút thành màu xanh
-        self.connect_button.setStyleSheet("background-color: #6495ED; color: white;")
-        self.connect_button.setText("Đang chờ kết nối ...")
-        QCoreApplication.processEvents()  # Cập nhật giao diện người dùng
-        self.device_list.clear() 
-
-        # Step 2: Create a QThread object
-        self.thread = QThread()
-        # Step 3: Create a worker object
-        self.worker = Worker()
-        # Step 4: Move worker to the thread
-        self.worker.moveToThread(self.thread)
-        # Step 5: Connect signals and slots
-        self.thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.worker.progress.connect(self.reportProgress)
-        # Step 6: Start the thread
-        self.thread.start()
-
-        # Final resets
-        self.connect_button.setEnabled(False)
-        self.thread.finished.connect(
-            lambda: self.connect_button.setEnabled(True)
-        )
-        self.thread.finished.connect(
-            lambda: self.connect_button.setStyleSheet("background-color: #66CDAA; color: white;")
-        )
-        self.thread.finished.connect(
-            lambda: self.connect_button.setText("Đã bật Bluetooth!")
-        )
-        # Sau khi tìm thấy các thiết bị, cập nhật lại màu của nút thành màu xanh lá cây
-        
-        
-
-    def device_list_select(self, text):
-        # Step 2: Create a QThread object
-        self.thread = QThread()
-        # Step 3: Create a worker object
-        self.worker = Worker()
-        # Step 4: Move worker to the thread
-        self.worker.moveToThread(self.thread)
-        # Step 5: Connect signals and slots
-        self.thread.started.connect(lambda: self.worker.connect(self.device_list.currentText()))
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        # worker.mac_id.emit(device_list.currentText())
-        # Step 6: Start the thread
-        self.thread.start()
-        # option = self.device_list.currentText()
-        # device_address = option[:17]
-        # port = 1  # RFCOMM port number
-        # try:
-        #     print(f"Đang kết nối đến thiết bị có địa chỉ {device_address}...")
-        #     sock = bluetooth.BluetoothSocket(Protocols.RFCOMM)
-        #     sock.connect((device_address, port))
-        #     return sock
-        # except Exception as e:
-        #     print("Kết nối thất bại")
-        #     return None
-        self.thread.finished.connect(
-            lambda: self.image_label.setText("Long-Running Step: 0")
-        )
-    
-
-    def connect_bluetooh(self):
-        # Step 2: Create a QThread object
-        self.thread = QThread()
-        # Step 3: Create a worker object
-        self.worker = Worker()
-        # Step 4: Move worker to the thread
-        self.worker.moveToThread(self.thread)
-        # Step 5: Connect signals and slots
-        self.thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.worker.progress.connect(self.reportProgress)
-        # Step 6: Start the thread
-        self.thread.start()
-
-        # Final resets
-        self.connect_button.setEnabled(False)
-        self.thread.finished.connect(
-            lambda: self.connect_button.setEnabled(True)
-        )
-        self.thread.finished.connect(
-            lambda: self.image_label.setText("Long-Running Step: 0")
-        )
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    w = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(w)
-    w.show()
-    sys.exit(app.exec())
