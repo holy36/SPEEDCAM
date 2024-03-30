@@ -83,7 +83,7 @@ class MainWindow(QMainWindow):
     def status_change(self,status):
         self.uic.connect_button.setDisabled(0)
         self.uic.device_list.setDisabled(0)
-        if status==4:
+        if status>3:
             self.uic.connect_button.setDisabled(1)
             self.uic.device_list.setDisabled(1)
             self.uic.connect_button.setMaximumWidth(9999999)
@@ -163,10 +163,11 @@ class ThreadClass(QtCore.QThread):
 
     def run(self):
         print('Starting thread...', self.index,self.mac_id)
+        self.connect_status.emit(4)
         counter = 0
             
         try:
-            self.connect_status.emit(4)
+            self.connect_status.emit(5)
             client = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
             client.connect((self.mac_id, 4))
 
