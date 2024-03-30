@@ -81,6 +81,8 @@ class MainWindow(QMainWindow):
         self.uic.cancel_button.setMaximumWidth(0)
 
     def status_change(self,status):
+        self.uic.connect_button.setDisabled(0)
+        self.uic.device_list.setDisabled(0)
         if status==1:
             self.uic.connect_button.setMaximumWidth(0)
             self.uic.cancel_button.setMaximumWidth(9999999)
@@ -91,6 +93,10 @@ class MainWindow(QMainWindow):
             self.uic.connect_button.setStyleSheet("background-color: #f7917c; color: white;")
             self.uic.connect_button.setText("Kết nối thất bại! Nhấn kết nối lại!")
         if status==4:
+            self.uic.connect_button.setDisabled(1)
+            self.uic.device_list.setDisabled(1)
+            self.uic.connect_button.setMaximumWidth(9999999)
+            self.uic.cancel_button.setMaximumWidth(0)
             self.uic.connect_button.setStyleSheet("background-color: #f7f57c; color: black;")
             self.uic.connect_button.setText("Đang kết nối tới thiết bị")
         # self.thread[2].connect_status.emit(3)
@@ -105,6 +111,7 @@ class MainWindow(QMainWindow):
         # Thiết lập màu của nút thành màu xanh
         self.uic.connect_button.setStyleSheet("background-color: #f7f57c; color: black;")
         self.uic.connect_button.setText("Đang quét thiết bị xung quanh...")
+        self.uic.connect_button.setDisabled(1)
         QCoreApplication.processEvents()  # Cập nhật giao diện người dùng
         self.uic.device_list.clear() 
 
@@ -137,6 +144,9 @@ class MainWindow(QMainWindow):
         self.thread[1].finished.connect(
             lambda:  self.uic.device_list.setDisabled(0)
         )
+        self.thread[1].finished.connect(
+            lambda: self.uic.connect_button.setDisabled(0)
+        )
         # Sau khi tìm thấy các thiết bị, cập nhật lại màu của nút thành màu xanh lá cây
         
 
@@ -164,8 +174,8 @@ class ThreadClass(QtCore.QThread):
 
             self.connect_status.emit(1)
             while True:
-                message = input("Enter message: ")
-                client.send(message.encode('utf-8'))
+                # message = input("Enter message: ")
+                # client.send(message.encode('utf-8'))
                 data = client.recv(1024)
                 if not data:
                     break
