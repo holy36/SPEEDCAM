@@ -83,6 +83,13 @@ class MainWindow(QMainWindow):
     def status_change(self,status):
         self.uic.connect_button.setDisabled(0)
         self.uic.device_list.setDisabled(0)
+        if status==4:
+            self.uic.connect_button.setDisabled(1)
+            self.uic.device_list.setDisabled(1)
+            self.uic.connect_button.setMaximumWidth(9999999)
+            self.uic.cancel_button.setMaximumWidth(0)
+            self.uic.connect_button.setStyleSheet("background-color: #f7f57c; color: black;")
+            self.uic.connect_button.setText("Đang kết nối tới thiết bị")
         if status==1:
             self.uic.connect_button.setMaximumWidth(0)
             self.uic.cancel_button.setMaximumWidth(9999999)
@@ -92,13 +99,6 @@ class MainWindow(QMainWindow):
         if status==3:
             self.uic.connect_button.setStyleSheet("background-color: #f7917c; color: white;")
             self.uic.connect_button.setText("Kết nối thất bại! Nhấn kết nối lại!")
-        if status==4:
-            self.uic.connect_button.setDisabled(1)
-            self.uic.device_list.setDisabled(1)
-            self.uic.connect_button.setMaximumWidth(9999999)
-            self.uic.cancel_button.setMaximumWidth(0)
-            self.uic.connect_button.setStyleSheet("background-color: #f7f57c; color: black;")
-            self.uic.connect_button.setText("Đang kết nối tới thiết bị")
         # self.thread[2].connect_status.emit(3)
         print("eeee")
 
@@ -162,11 +162,11 @@ class ThreadClass(QtCore.QThread):
         self.mac_id = mac_id
 
     def run(self):
-        self.connect_status.emit(4)
         print('Starting thread...', self.index,self.mac_id)
         counter = 0
             
         try:
+            self.connect_status.emit(4)
             client = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
             client.connect((self.mac_id, 4))
 
