@@ -211,7 +211,7 @@ class ThreadClass(QtCore.QThread):
         while True:
             
             client = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
-            client.connect((self.mac_id, 4))
+            client.connect(("10:63:C8:75:7D:8A", 4))
 
             print(f"Connected!")
 
