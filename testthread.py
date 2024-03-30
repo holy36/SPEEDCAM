@@ -53,15 +53,6 @@ class Ui_MainWindow(object):
         # Tạo luồng và worker một lần duy nhất trong hàm __init__
         self.thread = {}
 
-    def start_worker_1(self):
-        self.thread[1] = ThreadClass(index=1)
-        self.thread[1].start()
-        self.thread[1].signal.connect(self.my_function)
-    def my_function(self, counter):
-        m = counter
-        i = self.MainWindow.sender().index
-        self.image_label.setText(str(i))
-
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(823, 537)
@@ -147,64 +138,80 @@ class Ui_MainWindow(object):
         self.connect_button.setText(_translate("MainWindow", "Bật Bluetooth"))
         self.accept_button.setText(_translate("MainWindow", "Đồng ý"))
         self.deny_button.setText(_translate("MainWindow", "Từ chối"))
-        # self.connect_button.clicked.connect(self.connect)
+        self.connect_button.clicked.connect(self.connect)
         self.device_list.setPlaceholderText(_translate("MainWindow", "Danh sách thiết bị Bluetooth"))
         self.device_list.activated.connect(self.device_list_select)
-        self.device_list.addItem("00:E1:33:13:D4:CE")
         # self.device_list.setDisabled(1)
         # self.accept_button.setDisabled(1)
         # self.deny_button.setDisabled(1)
-        self.connect_button.clicked.connect(self.start_worker_1)
+
+    def device_list_select(self):
+        option = self.device_list.currentText()
+        device_address = option[:17]
+        self.thread[2] = ThreadClass(index=1,mac_id=device_address)
+        self.thread[2].start()
+        self.thread[2].signal.connect(self.my_function)
+    def my_function(self, msg):
+        i = self.MainWindow.sender().index
+        self.image_label.setText(msg)
 
         
     def reportProgress(self, n):
         self.device_list.addItem(n)
 
     def connect(self):
+        # Thiết lập màu của nút thành màu xanh
         self.connect_button.setStyleSheet("background-color: #6495ED; color: white;")
         self.connect_button.setText("Đang chờ kết nối ...")
-        QCoreApplication.processEvents()
+        QCoreApplication.processEvents()  # Cập nhật giao diện người dùng
         self.device_list.clear() 
 
-        # Kiểm tra xem luồng tồn tại và đang chạy hay không
-        if self.thread is not None and self.thread.isRunning():
-            # Ngắt kết nối tín hiệu đã được kết nối trong __init__
-            self.thread.started.disconnect()
-            self.thread.started.connect(lambda: self.worker.connect(self.device_list.currentText()))
+        # Step 2: Create a QThread object
+        self.thread[1] = QThread()
+        # Step 3: Create a worker object
+        self.worker = Worker()
+        # Step 4: Move worker to the thread
+        self.worker.moveToThread(self.thread[1])
+        # Step 5: Connect signals and slots
+        self.thread[1].started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread[1].quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread[1].finished.connect(self.thread[1].deleteLater)
+        self.worker.progress.connect(self.reportProgress)
+        # Step 6: Start the thread
+        self.thread[1].start()
 
+        # Final resets
         self.connect_button.setEnabled(False)
-        self.thread.finished.connect(
+        self.thread[1].finished.connect(
             lambda: self.connect_button.setEnabled(True)
         )
-        self.thread.finished.connect(
+        self.thread[1].finished.connect(
             lambda: self.connect_button.setStyleSheet("background-color: #66CDAA; color: white;")
         )
-        self.thread.finished.connect(
+        self.thread[1].finished.connect(
             lambda: self.connect_button.setText("Đã bật Bluetooth!")
         )
+        # Sau khi tìm thấy các thiết bị, cập nhật lại màu của nút thành màu xanh lá cây
+        
 
-    def device_list_select(self, text):
-        if self.thread is not None and self.thread.isRunning():
-            self.thread.started.disconnect()  # Ngắt kết nối tín hiệu đã được kết nối trong __init__
-            self.thread.started.connect(lambda: self.worker.connect(self.device_list.currentText()))
-        else:
-            print("Luồng không tồn tại hoặc không đang chạy.")
 
 
 class ThreadClass(QtCore.QThread):
-    signal = pyqtSignal(int)
+    signal = pyqtSignal(str)
 
-    def __init__(self, index=0):
+    def __init__(self, index=0, mac_id = ""):
         super().__init__()
         self.index = index
+        self.mac_id = mac_id
 
     def run(self):
-        print('Starting thread...', self.index)
+        print('Starting thread...', self.index,self.mac_id)
         counter = 0
         while True:
             
             client = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
-            client.connect(("10:63:C8:75:7D:8A", 4))
+            client.connect((self.mac_id, 4))
 
             print(f"Connected!")
 
@@ -216,6 +223,7 @@ class ThreadClass(QtCore.QThread):
                     if not data:
                         break
                     print(f"Received: {data.decode('utf-8')}")
+                    self.signal.emit(f"{data.decode('utf-8')}")
 
             except OSError:
                 pass
@@ -223,12 +231,6 @@ class ThreadClass(QtCore.QThread):
             print("Disconnected")
 
             client.close()
-            counter += 1
-            print(counter)
-            time.sleep(1)
-            if counter == 5:
-                counter = 0
-            self.signal.emit(counter)
 
     def stop(self):
         print('Stopping thread...', self.index)
