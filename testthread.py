@@ -10,7 +10,7 @@ import socket
 import time
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import QCoreApplication
-from bluetooth import Protocols
+# from bluetooth import Protocols
 import bluetooth
 import sys
 from time import sleep
@@ -37,7 +37,7 @@ class Worker(QObject):
         port = 1  # RFCOMM port number
         # try:
         print(f"Đang kết nối đến thiết bị có địa chỉ {device_address}...")
-        sock = bluetooth.BluetoothSocket(Protocols.RFCOMM)
+        sock = bluetooth.BluetoothSocket(socket.BTPROTO_RFCOMM)
         sock.connect((device_address, port))
         while(1):
             pass
