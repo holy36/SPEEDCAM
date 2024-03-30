@@ -59,6 +59,11 @@ class MainWindow(QMainWindow):
         self.uic.cancel_button.clicked.connect(self.cancel_connection)
         self.uic.device_list.setPlaceholderText( "Danh sách thiết bị Bluetooth")
         self.uic.device_list.activated.connect(self.device_list_select)
+        self.uic.cancel_button.setStyleSheet("background-color: #66CDAA; color: white;")
+        
+        self.uic.device_list.setDisabled(1)
+        self.uic.accept_button.setDisabled(1)
+        self.uic.deny_button.setDisabled(1)
     def device_list_select(self):
         option = self.uic.device_list.currentText()
         device_address = option[:17]
@@ -82,6 +87,12 @@ class MainWindow(QMainWindow):
         if status==0:
             self.uic.connect_button.setMaximumWidth(9999999)
             self.uic.cancel_button.setMaximumWidth(0)
+        if status==3:
+            self.uic.connect_button.setStyleSheet("background-color: #f7917c; color: white;")
+            self.uic.connect_button.setText("Kết nối thất bại! Nhấn kết nối lại!")
+        if status==4:
+            self.uic.connect_button.setStyleSheet("background-color: #f7f57c; color: black;")
+            self.uic.connect_button.setText("Đang kết nối tới thiết bị")
         # self.thread[2].connect_status.emit(3)
         print("eeee")
 
@@ -92,8 +103,8 @@ class MainWindow(QMainWindow):
 
     def connect(self):
         # Thiết lập màu của nút thành màu xanh
-        self.uic.connect_button.setStyleSheet("background-color: #6495ED; color: white;")
-        self.uic.connect_button.setText("Đang chờ kết nối ...")
+        self.uic.connect_button.setStyleSheet("background-color: #f7f57c; color: black;")
+        self.uic.connect_button.setText("Đang quét thiết bị xung quanh...")
         QCoreApplication.processEvents()  # Cập nhật giao diện người dùng
         self.uic.device_list.clear() 
 
@@ -118,10 +129,13 @@ class MainWindow(QMainWindow):
             lambda: self.uic.connect_button.setEnabled(True)
         )
         self.thread[1].finished.connect(
-            lambda: self.uic.connect_button.setStyleSheet("background-color: #66CDAA; color: white;")
+            lambda: self.uic.connect_button.setStyleSheet("background-color: #6495ED; color: white;")
         )
         self.thread[1].finished.connect(
             lambda: self.uic.connect_button.setText("Đã bật Bluetooth! Nhấn để quét Bluetooth lại!")
+        )
+        self.thread[1].finished.connect(
+            lambda:  self.uic.device_list.setDisabled(0)
         )
         # Sau khi tìm thấy các thiết bị, cập nhật lại màu của nút thành màu xanh lá cây
         
@@ -138,16 +152,16 @@ class ThreadClass(QtCore.QThread):
         self.mac_id = mac_id
 
     def run(self):
-        self.connect_status.emit(1)
+        self.connect_status.emit(4)
         print('Starting thread...', self.index,self.mac_id)
         counter = 0
             
-        client = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
-        client.connect((self.mac_id, 4))
-
-        print(f"Connected!")
-
         try:
+            client = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
+            client.connect((self.mac_id, 4))
+
+            print(f"Connected!")
+
             self.connect_status.emit(1)
             while True:
                 message = input("Enter message: ")
@@ -160,7 +174,7 @@ class ThreadClass(QtCore.QThread):
                 self.signal.emit(f"{data.decode('utf-8')}")
 
         except OSError:
-            self.connect_status.emit(0)
+            self.connect_status.emit(3)
             pass
 
         print("Disconnected")
@@ -170,6 +184,7 @@ class ThreadClass(QtCore.QThread):
 
     def stop(self):
         print('Stopping thread...', self.index)
+        self.connect_status.emit(0)
         self.terminate()
 
 if __name__ == "__main__":
