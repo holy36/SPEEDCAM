@@ -180,34 +180,25 @@ class Ui_MainWindow(object):
         
 
     def device_list_select(self, text):
-        # Step 2: Create a QThread object
-        self.thread = QThread()
-        # Step 3: Create a worker object
-        self.worker = Worker()
-        # Step 4: Move worker to the thread
+        # Vô hiệu hóa nút kết nối trong quá trình kết nối
+        self.connect_button.setEnabled(False)
+        self.thread = QThread()  # Tạo một QThread mới
+        self.worker = Worker()   # Tạo một worker mới
         self.worker.moveToThread(self.thread)
-        # Step 5: Connect signals and slots
         self.thread.started.connect(lambda: self.worker.connect(self.device_list.currentText()))
+        self.worker.finished.connect(self.on_device_list_select_finished)  # Xử lý khi tác vụ kết thúc
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
-        # worker.mac_id.emit(device_list.currentText())
-        # Step 6: Start the thread
         self.thread.start()
-        # option = self.device_list.currentText()
-        # device_address = option[:17]
-        # port = 1  # RFCOMM port number
-        # try:
-        #     print(f"Đang kết nối đến thiết bị có địa chỉ {device_address}...")
-        #     sock = bluetooth.BluetoothSocket(Protocols.RFCOMM)
-        #     sock.connect((device_address, port))
-        #     return sock
-        # except Exception as e:
-        #     print("Kết nối thất bại")
-        #     return None
-        self.thread.finished.connect(
-            lambda: self.image_label.setText("Long-Running Step: 0")
-        )
+
+    def on_device_list_select_finished(self):
+        # Hàm được gọi khi tác vụ kết nối hoàn thành
+        self.connect_button.setEnabled(True)  # Kích hoạt lại nút kết nối
+        self.thread.wait()  # Chờ cho tiểu trình kết thúc hoàn toàn
+        self.thread.deleteLater()  # Xóa tiểu trình sau khi hoàn thành
+        self.image_label.setText("Long-Running Step: 0")
+
     
 
     def connect_bluetooh(self):
