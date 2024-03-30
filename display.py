@@ -98,6 +98,7 @@ class Ui_MainWindow(object):
         self.accept_button.setText(_translate("MainWindow", "Đồng ý"))
         self.deny_button.setText(_translate("MainWindow", "Từ chối"))
         self.connect_button.clicked.connect(self.connect)
+        self.device_list.setPlaceholderText(_translate("MainWindow", "Danh sách thiết bị Bluetooth"))
 
     def connect(self):
         # Thiết lập màu của nút thành màu xanh
@@ -107,7 +108,9 @@ class Ui_MainWindow(object):
         print("Đang tìm kiếm các thiết bị Bluetooth xung quanh...")
         nearby_devices = bluetooth.discover_devices(duration=8, lookup_names=True, flush_cache=True)
         print("Các thiết bị Bluetooth xung quanh:")
+        self.device_list.clear() 
         for addr, name in nearby_devices:
+            self.device_list.addItem(f"{addr} - {name}")
             print(f"{addr} - {name}")
 
         # Sau khi tìm thấy các thiết bị, cập nhật lại màu của nút thành màu xanh lá cây
