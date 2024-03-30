@@ -7,7 +7,7 @@ import datetime
 import bluetooth
 import display
 
-class loginUi(display.Ui_MainWindow): #login window
+class loginUi(QMainWindow): #login window
     def __init__(self):
         super(loginUi,self).__init__()
         uic.loadUi('display.ui',self) #goi ui chuong trinh

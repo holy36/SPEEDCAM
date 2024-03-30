@@ -7,8 +7,6 @@
 
 
 from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtCore import QCoreApplication
-
 
 import bluetooth
 
@@ -99,21 +97,14 @@ class Ui_MainWindow(object):
         self.deny_button.setText(_translate("MainWindow", "Từ chối"))
         self.connect_button.clicked.connect(self.connect)
 
-    def connect(self):
-        # Thiết lập màu của nút thành màu xanh
-        self.connect_button.setStyleSheet("background-color: #6495ED; color: white;")
-        QCoreApplication.processEvents()  # Cập nhật giao diện người dùng
 
+    def connect(self):
         print("Đang tìm kiếm các thiết bị Bluetooth xung quanh...")
         nearby_devices = bluetooth.discover_devices(duration=8, lookup_names=True, flush_cache=True)
         print("Các thiết bị Bluetooth xung quanh:")
         for addr, name in nearby_devices:
             print(f"{addr} - {name}")
-
-        # Sau khi tìm thấy các thiết bị, cập nhật lại màu của nút thành màu xanh lá cây
-        self.connect_button.setStyleSheet("background-color: #66CDAA; color: white;")
-
-
+        self.connect_button.setStyleSheet("background-color: green; color: white;")
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
