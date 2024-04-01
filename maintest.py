@@ -15,7 +15,7 @@ from PyQt6.QtCore import QCoreApplication
 import bluetooth
 import sys
 from time import sleep
-from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt
 import display
@@ -70,15 +70,19 @@ class MainWindow(QMainWindow):
         self.uic.accept_button.setDisabled(1)
         self.uic.deny_button.setDisabled(1)
     
-    def wheelEvent(self, event):
-        if event.angleDelta().y() > 0:  # Phóng to khi cuộn lên
-            self.zoom(1.1)
-        else:  # Thu nhỏ khi cuộn xuống
-            self.zoom(0.9)
+    def event(self,event):
+        if event.type() == QPinchGesture.gestureType:
+            gesture = event.gesture(QPinchGesture)
+            if gesture:
+                self.handle_pinch(gesture)
+                return True
+        return super().event(event)
 
-    def zoom(self, factor):
-        self.image = self.image.scaled(self.image.size() * factor)
+    def handle_pinch(self, gesture):
+        scale_factor = gesture.scaleFactor()
+        self.image = self.image.scaled(self.image.size() * scale_factor)
         self.uic.image_label.setPixmap(self.image)
+
 
     def device_list_select(self):
         option = self.uic.device_list.currentText()
