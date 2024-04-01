@@ -36,6 +36,7 @@ class View(QGraphicsView):
         return True
 
     def pinchTriggered(self, gesture):
+        print(gesture.scaleFactor())
         changeFlags = gesture.changeFlags()
         
         if changeFlags & QPinchGesture.ScaleFactorChanged:
