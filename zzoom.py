@@ -18,8 +18,12 @@ class View(QGraphicsView):
         self.setScene(self.scene)
 
     def event(self, event):
-        if event.type() == QEvent.Gesture:
-            return self.gestureEvent(QGestureEvent(event))
+        if isinstance(event, QNativeGestureEvent) and event.gestureType() == Qt.NativeGestureType.ZoomNativeGesture:
+            return self.zoomNativeEvent(event)
+        return super().event(event)
+
+    def zoomNativeEvent(self, event: QNativeGestureEvent):
+        print(f"Pinch Gesture Event: pos{event.pos().x(), event.pos().y()} value({event.value()})")
         return super().event(event)
 
     def gestureEvent(self, event):
