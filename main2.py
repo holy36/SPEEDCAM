@@ -63,7 +63,7 @@ class MainWindow(QMainWindow):
         
         self.uic.image_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self.uic.image_label.setScaledContents(True)
-        self.uic.image_label.setPixmap(QtGui.QPixmap("C:\\Users\\Admin PC\\Desktop\\Benkyou u u u\\DATN\\test.jpg"))
+        self.uic.image_label.setPixmap(QtGui.QPixmap('test.jpg'))
 
 
         self.uic.device_list.setDisabled(1)
