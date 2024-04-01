@@ -73,15 +73,15 @@ class MainWindow(QMainWindow):
     
     def event(self,event):
         if event.type() == QEvent.Type.Gesture:
-            print(event)
             gesture = event.gesture(Qt.GestureType.PinchGesture)
+            print(gesture)
             if gesture:
                 self.handle_pinch(gesture)
                 return True
         return super().event(event)
 
     def handle_pinch(self, gesture):
-        print(gesture)
+        print(gesture.scaleFactor())
         scale_factor = gesture.scaleFactor()
         self.image = self.image.scaled(self.image.size() * scale_factor)
         self.uic.image_label.setPixmap(self.image)
