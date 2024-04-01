@@ -74,7 +74,7 @@ class MainWindow(QMainWindow):
     def event(self,event):
         if event.type() == QEvent.Type.Gesture:
             print(event)
-            gesture = event.gesture(QPinchGesture)
+            gesture = event.gesture(Qt.GestureType.PinchGesture)
             if gesture:
                 self.handle_pinch(gesture)
                 return True
