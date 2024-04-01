@@ -19,6 +19,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout,
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt
 import display
+from PyQt6.QtGui import QNativeGestureEvent
 
 class Worker(QObject):
     finished = pyqtSignal()
@@ -70,13 +71,22 @@ class MainWindow(QMainWindow):
         self.uic.accept_button.setDisabled(1)
         self.uic.deny_button.setDisabled(1)
     
-    def event(self,event):
-        print(event)
-        if event.type() == QPinchGesture.gestureType:
-            gesture = event.gesture(QPinchGesture)
-            if gesture:
-                self.handle_pinch(gesture)
-                return True
+    # def event(self,event):
+    #     print(event)
+    #     if event.type() == QPinchGesture.gestureType:
+    #         gesture = event.gesture(QPinchGesture)
+    #         if gesture:
+    #             self.handle_pinch(gesture)
+    #             return True
+    #     return super().event(event)
+    def event(self, event):
+        print(isinstance(event, QNativeGestureEvent))
+        if isinstance(event, QNativeGestureEvent) and event.gestureType() == Qt.NativeGestureType.ZoomNativeGesture:
+            return self.zoomNativeEvent(event)
+        return super().event(event)
+
+    def zoomNativeEvent(self, event: QNativeGestureEvent):
+        print(f"Pinch Gesture Event: pos{event.pos().x(), event.pos().y()} value({event.value()})")
         return super().event(event)
 
     def handle_pinch(self, gesture):
