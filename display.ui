@@ -73,10 +73,6 @@
           <property name="text">
            <string/>
           </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>C:/Users/Admin PC/Desktop/Benkyou u u u/DATN/down-arrow-svgrepo-com.svg</normaloff>C:/Users/Admin PC/Desktop/Benkyou u u u/DATN/down-arrow-svgrepo-com.svg</iconset>
-          </property>
           <property name="iconSize">
            <size>
             <width>25</width>
@@ -96,10 +92,6 @@
           <property name="text">
            <string/>
           </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>C:/Users/Admin PC/Desktop/Benkyou u u u/DATN/maximize.svg</normaloff>C:/Users/Admin PC/Desktop/Benkyou u u u/DATN/maximize.svg</iconset>
-          </property>
           <property name="iconSize">
            <size>
             <width>45</width>
@@ -118,10 +110,6 @@
           </property>
           <property name="text">
            <string/>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>C:/Users/Admin PC/Desktop/Benkyou u u u/DATN/times.svg</normaloff>C:/Users/Admin PC/Desktop/Benkyou u u u/DATN/times.svg</iconset>
           </property>
           <property name="iconSize">
            <size>
@@ -199,10 +187,6 @@ p, li { white-space: pre-wrap; }
           <property name="text">
            <string>Bật Bluetooth</string>
           </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>C:/Users/Admin PC/Desktop/Benkyou u u u/DATN/bluetooth.svg</normaloff>C:/Users/Admin PC/Desktop/Benkyou u u u/DATN/bluetooth.svg</iconset>
-          </property>
          </widget>
         </item>
         <item>
@@ -251,10 +235,6 @@ p, li { white-space: pre-wrap; }
           <property name="text">
            <string>Đồng ý</string>
           </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>C:/Users/Admin PC/Desktop/Benkyou u u u/DATN/accept.svg</normaloff>C:/Users/Admin PC/Desktop/Benkyou u u u/DATN/accept.svg</iconset>
-          </property>
          </widget>
         </item>
         <item>
@@ -268,10 +248,6 @@ p, li { white-space: pre-wrap; }
           <property name="text">
            <string>Từ chối</string>
           </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>C:/Users/Admin PC/Desktop/Benkyou u u u/DATN/OnlineWebFonts_COM_Icons_74fc3e7fe2776d7f199776d0ca11ed23/deny.svg</normaloff>C:/Users/Admin PC/Desktop/Benkyou u u u/DATN/OnlineWebFonts_COM_Icons_74fc3e7fe2776d7f199776d0ca11ed23/deny.svg</iconset>
-          </property>
          </widget>
         </item>
        </layout>
@@ -280,7 +256,6 @@ p, li { white-space: pre-wrap; }
     </item>
    </layout>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
  <connections/>
