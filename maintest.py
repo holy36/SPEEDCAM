@@ -71,6 +71,7 @@ class MainWindow(QMainWindow):
         self.uic.deny_button.setDisabled(1)
     
     def event(self,event):
+        print(event)
         if event.type() == QPinchGesture.gestureType:
             gesture = event.gesture(QPinchGesture)
             if gesture:
@@ -79,6 +80,7 @@ class MainWindow(QMainWindow):
         return super().event(event)
 
     def handle_pinch(self, gesture):
+        print(gesture)
         scale_factor = gesture.scaleFactor()
         self.image = self.image.scaled(self.image.size() * scale_factor)
         self.uic.image_label.setPixmap(self.image)
