@@ -22,7 +22,7 @@ class View(QGraphicsView):
             return self.gestureEvent(QGestureEvent(event))
         return super().event(event)
 
-    def gestureEvent(self, event):
+    def gestureEvent(self, event: QEvent):
         print("Gesture event")
 
         if event.gesture(Qt.PinchGesture):
