@@ -61,7 +61,11 @@ class MainWindow(QMainWindow):
         self.uic.device_list.setPlaceholderText( "Danh sách thiết bị Bluetooth")
         self.uic.device_list.activated.connect(self.device_list_select)
         self.uic.cancel_button.setStyleSheet("background-color: #66CDAA; color: white;")
+        self.uic.quitbutton.clicked.connect(self.exit)
+        self.uic.minbutton.clicked.connect(self.minimize_window)
+        self.uic.maxbutton.clicked.connect(self.maximize_window)
         
+    
         self.image = QPixmap("test.jpg")
         self.uic.image_label.setPixmap(self.image)
         self.uic.image_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
@@ -71,6 +75,21 @@ class MainWindow(QMainWindow):
         self.uic.accept_button.setDisabled(1)
         self.uic.deny_button.setDisabled(1)
     
+    def exit(self):
+        # Thực hiện các hành động bạn muốn khi thoát ứng dụng
+        QtWidgets.QApplication.quit()
+
+    def minimize_window(self):
+        # Minimize cửa sổ
+        self.showMinimized()
+
+    def maximize_window(self):
+        # Maximize hoặc phục hồi cửa sổ
+        if self.isMaximized():
+            self.showNormal()
+        else:
+            self.showMaximized()
+
     def event(self,event):
         if event.type() == QEvent.Type.Gesture:
             gesture = event.gesture(Qt.GestureType.PinchGesture)
@@ -83,7 +102,18 @@ class MainWindow(QMainWindow):
     def handle_pinch(self, gesture):
         print(gesture.scaleFactor())
         scale_factor = gesture.scaleFactor()
+        pixmap4 = self.image.scaled(64, 64, QtCore.Qt.KeepAspectRatio)
         self.image = self.image.scaled(self.image.size() * scale_factor)
+        self.uic.image_label.setPixmap(pixmap4* scale_factor)
+
+    def wheelEvent(self, event):
+        if event.angleDelta().y() > 0:  # Phóng to khi cuộn lên
+            self.zoom(1.1)
+        else:  # Thu nhỏ khi cuộn xuống
+            self.zoom(0.9)
+
+    def zoom(self, factor):
+        self.image = self.image.scaled(self.image.size() * factor)
         self.uic.image_label.setPixmap(self.image)
 
 
