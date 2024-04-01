@@ -17,7 +17,7 @@ import sys
 from time import sleep
 from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt
+from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent
 import display
 
 class Worker(QObject):
@@ -55,6 +55,7 @@ class MainWindow(QMainWindow):
         self.uic = display.Ui_MainWindow()
         self.uic.setupUi(self)
         self.thread = {}
+        self.grabGesture(Qt.GestureType.PinchGesture)
         self.uic.connect_button.clicked.connect(self.connect)
         self.uic.cancel_button.clicked.connect(self.cancel_connection)
         self.uic.device_list.setPlaceholderText( "Danh sách thiết bị Bluetooth")
@@ -71,8 +72,8 @@ class MainWindow(QMainWindow):
         self.uic.deny_button.setDisabled(1)
     
     def event(self,event):
-        print(event)
-        if event.type() == QPinchGesture.gestureType:
+        if event.type() == QEvent.Type.Gesture:
+            print(event)
             gesture = event.gesture(QPinchGesture)
             if gesture:
                 self.handle_pinch(gesture)
