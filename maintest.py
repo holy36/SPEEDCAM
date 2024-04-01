@@ -65,34 +65,39 @@ class MainWindow(QMainWindow):
         self.uic.quitbutton.clicked.connect(self.exit)
         self.uic.minbutton.clicked.connect(self.minimize_window)
         self.uic.maxbutton.clicked.connect(self.maximize_window)
+        self.uic.bground.setStyleSheet("background-color: #949084; color: white;")
+        self.uic.bground.setText("Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab")
+
+
+        
 
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("down-arrow-svgrepo-com.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon.addPixmap(QtGui.QPixmap("icon\\window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.minbutton.setIcon(icon)
         self.uic.minbutton.setIconSize(QtCore.QSize(25, 30))
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("maximize.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.maxbutton.setIcon(icon1)
-        self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("bluetooth.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon2.addPixmap(QtGui.QPixmap("icon\\png-clipart-computer-icons-derosa-music-bluetooth-bluetooth-text-trademark-thumbnail.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.connect_button.setIcon(icon2)
         self.uic.connect_button.setIconSize(QtCore.QSize(25, 30))
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("accept.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon3.addPixmap(QtGui.QPixmap("icon\\pngtree-chek-mark-rounded-icon-tick-box-vector-png-image_17766700.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.accept_button.setIcon(icon3)
         self.uic.accept_button.setIconSize(QtCore.QSize(25, 30))
         icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap("deny.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon4.addPixmap(QtGui.QPixmap("icon\\473-4730000_deny-comments-saturation-icon-png.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.deny_button.setIcon(icon4)
         self.uic.deny_button.setIconSize(QtCore.QSize(25, 30))
         icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap("times.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon5.addPixmap(QtGui.QPixmap("icon\\2017609-200.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.quitbutton.setIcon(icon5)
         self.uic.quitbutton.setIconSize(QtCore.QSize(25, 30))
         self.uic.minbutton.setText("Thu xuống")
-        self.uic.maxbutton.setText("Phóng to")
         self.uic.quitbutton.setText("Thoát")
+        self.uic.maxbutton.setText("Thu nhỏ")
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap("icon\\54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.uic.maxbutton.setIcon(icon1)
+        self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
 
 
         
@@ -117,8 +122,19 @@ class MainWindow(QMainWindow):
     def maximize_window(self):
         # Maximize hoặc phục hồi cửa sổ
         if self.isMaximized():
+            self.uic.maxbutton.setText("Phóng to")
+            icon1 = QtGui.QIcon()
+            icon1.addPixmap(QtGui.QPixmap("icon\\maximize-icon-512x512-ari7tfdx.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+            self.uic.maxbutton.setIcon(icon1)
+            self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
             self.showNormal()
+
         else:
+            self.uic.maxbutton.setText("Thu nhỏ")
+            icon1 = QtGui.QIcon()
+            icon1.addPixmap(QtGui.QPixmap("icon\\54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+            self.uic.maxbutton.setIcon(icon1)
+            self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
             self.showMaximized()
 
     def event(self,event):
