@@ -90,6 +90,11 @@ class MainWindow(QMainWindow):
         icon5.addPixmap(QtGui.QPixmap("times.svg"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.quitbutton.setIcon(icon5)
         self.uic.quitbutton.setIconSize(QtCore.QSize(25, 30))
+        self.uic.minbutton.setText("Thu xuống")
+        self.uic.maxbutton.setText("Phóng to")
+        self.uic.quitbutton.setText("Thoát")
+
+
         
     
         self.image = QPixmap("test.jpg")
