@@ -15,8 +15,8 @@ from PyQt6.QtCore import QCoreApplication
 import bluetooth
 import sys
 from time import sleep
-from PyQt6.QtWidgets import QApplication, QMainWindow
-
+from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy
+from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 import display
 
@@ -61,6 +61,11 @@ class MainWindow(QMainWindow):
         self.uic.device_list.activated.connect(self.device_list_select)
         self.uic.cancel_button.setStyleSheet("background-color: #66CDAA; color: white;")
         
+        self.uic.image_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+        self.uic.image_label.setScaledContents(True)
+        self.uic.image_label.setPixmap(QtGui.QPixmap("C:\\Users\\Admin PC\\Desktop\\Benkyou u u u\\DATN\\test.jpg"))
+
+
         self.uic.device_list.setDisabled(1)
         self.uic.accept_button.setDisabled(1)
         self.uic.deny_button.setDisabled(1)
@@ -100,7 +105,6 @@ class MainWindow(QMainWindow):
             self.uic.connect_button.setStyleSheet("background-color: #f7917c; color: white;")
             self.uic.connect_button.setText("Kết nối thất bại! Nhấn kết nối lại!")
         # self.thread[2].connect_status.emit(3)
-        print("eeee")
 
         pass
 
@@ -162,7 +166,7 @@ class ThreadClass(QtCore.QThread):
         self.mac_id = mac_id
 
     def run(self):
-        print('Starting thread...', self.index,self.mac_id)
+        # print('Starting thread...', self.index,self.mac_id)
         self.connect_status.emit(4)
         counter = 0
             
@@ -171,7 +175,7 @@ class ThreadClass(QtCore.QThread):
             client = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
             client.connect((self.mac_id, 4))
 
-            print(f"Connected!")
+            # print(f"Connected!")
 
             self.connect_status.emit(1)
             while True:
@@ -180,15 +184,15 @@ class ThreadClass(QtCore.QThread):
                 data = client.recv(1024)
                 if not data:
                     break
-                print(f"Received: {data.decode('utf-8')}")
-                print(self.connect_status)
+                # print(f"Received: {data.decode('utf-8')}")
+                # print(self.connect_status)
                 self.signal.emit(f"{data.decode('utf-8')}")
 
         except OSError:
             self.connect_status.emit(3)
             pass
 
-        print("Disconnected")
+        # print("Disconnected")
         self.connect_status.emit(0)
 
         client.close()
