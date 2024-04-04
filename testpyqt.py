@@ -277,10 +277,12 @@ class MainWindow(QMainWindow):
         return super().event(event)
 
     def handle_pinch(self, gesture):
+        print(gesture.scaleFactor())
         scale_factor = gesture.scaleFactor()
-        size = self.image.size()
-        pixmap = self.image.scaled(size.width*scale_factor,size.height*scale_factor, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
-        self.uic.image_label.setPixmap(pixmap)
+        pixmap4 = self.image.scaled(64, 64, QtCore.Qt.KeepAspectRatio)
+        self.image = self.image.scaled(self.image.size() * scale_factor)
+        self.uic.image_label.setPixmap(pixmap4* scale_factor)
+
         
 
     def wheelEvent(self, event):
