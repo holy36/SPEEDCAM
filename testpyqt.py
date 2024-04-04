@@ -126,8 +126,19 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         self.image = QPixmap("test.jpg")
         scale_factor = gesture.scaleFactor()
         size =  self.image.size()
-        pixmap =  self.image.scaled(size.width*scale_factor,size.height*scale_factor, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
-        self._photo.setPixmap(pixmap)
+        if self.hasPhoto():
+            if gesture.scaleFactor().y() > 0:
+                factor = 1.25
+                self._zoom += 1
+            else:
+                factor = 0.8
+                self._zoom -= 1
+            if self._zoom > 0:
+                self.scale(factor, factor)
+            elif self._zoom <= 0:
+                self.fitInView()
+            else:
+                self._zoom = 0        
 
     def mousePressEvent(self, event):
         if self._photo.isUnderMouse():
@@ -184,6 +195,8 @@ class MainWindow(QMainWindow):
         self.uic.maxbutton.clicked.connect(self.maximize_window)
         self.uic.bground.setStyleSheet("background-color: #949084; color: white;")
         self.uic.bground.setText("Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab")
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
 
         
