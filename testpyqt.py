@@ -123,9 +123,10 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         return super().event(event)
 
     def handle_pinch(self, gesture):
-        self.image = QPixmap("test.jpg")
-        scale_factor = gesture.scaleFactor()
-        size =  self.image.size()
+        factor = gesture.scaleFactor()
+        pixmap4 = self.image.scaled(64, 64, QtCore.Qt.KeepAspectRatio)
+        self.image = self.image.scaled(self.image.size() * factor)
+        self._photo.setPixmap(pixmap4* factor)
         if self.hasPhoto():
             if gesture.scaleFactor().y() > 0:
                 factor = 1.25
@@ -267,20 +268,20 @@ class MainWindow(QMainWindow):
             self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
             self.showMaximized()
 
-    def event(self,event):
-        if event.type() == QEvent.Type.Gesture:
-            gesture = event.gesture(Qt.GestureType.PinchGesture)
-            print(gesture)
-            if gesture:
-                self.handle_pinch(gesture)
-                return True
-        return super().event(event)
+    # def event(self,event):
+    #     if event.type() == QEvent.Type.Gesture:
+    #         gesture = event.gesture(Qt.GestureType.PinchGesture)
+    #         print(gesture)
+    #         if gesture:
+    #             self.handle_pinch(gesture)
+    #             return True
+    #     return super().event(event)
 
-    def handle_pinch(self, gesture):
-        scale_factor = gesture.scaleFactor()
-        size = self.image.size()
-        pixmap = self.image.scaled(size.width*scale_factor,size.height*scale_factor, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
-        self.uic.image_label.setPixmap(pixmap)
+    # def handle_pinch(self, gesture):
+    #     scale_factor = gesture.scaleFactor()
+    #     size = self.image.size()
+    #     pixmap = self.image.scaled(size.width*scale_factor,size.height*scale_factor, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+    #     self.uic.image_label.setPixmap(pixmap)
         
 
     def wheelEvent(self, event):
