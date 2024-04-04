@@ -1,53 +1,39 @@
-import sys
+from PyQt6 import QtWidgets, QtGui
 
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-
-class View(QGraphicsView):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        self.grabGesture(Qt.PinchGesture)
-        self.grabGesture(Qt.SwipeGesture)
-
-        self.scene = QGraphicsScene()
-        self.scene.setSceneRect(-5000, -5000, 10000, 10000)
-        self.scene.addRect(0, 0, 100, 100, QPen(Qt.NoPen), QBrush(Qt.green))
-
-        self.setScene(self.scene)
-
-    def event(self, event):
-        if event.type() == QEvent.Gesture:
-            return self.gestureEvent(QGestureEvent(event))
-        return super().event(event)
-
-    def gestureEvent(self, event: QEvent):
-        print("Gesture event")
-
-        if event.gesture(Qt.PinchGesture):
-            print("Pinch gesture")
-            self.pinchTriggered(QPinchGesture(event.gesture(Qt.PinchGesture)))
-        if event.gesture(Qt.SwipeGesture):
-            print("Swipe gesture")
-            self.swipeTriggered(QSwipeGesture(event.gesture(Qt.SwipeGesture)))
-
-        print()
-        return True
-
-    def pinchTriggered(self, gesture):
-        print(gesture.scaleFactor())
-        changeFlags = gesture.changeFlags()
+class MyWidget(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
         
-        if changeFlags & QPinchGesture.ScaleFactorChanged:
-            print("Scale factor changed", gesture.scaleFactor(), gesture.totalScaleFactor(), gesture.lastScaleFactor())
+        layout = QtWidgets.QVBoxLayout(self)
+        
+        # Tạo QGraphicsView để hiển thị hình ảnh
+        self.graphics_view = QtWidgets.QGraphicsView(self)
+        layout.addWidget(self.graphics_view)
+        
+        # Tạo QGraphicsScene và thiết lập nó cho QGraphicsView
+        self.scene = QtWidgets.QGraphicsScene()
+        self.graphics_view.setScene(self.scene)
+        
+        # Load hình ảnh từ tệp hoặc pixmap
+        pixmap = QtGui.QPixmap("test.jpg")
+        
+        # Tính toán tỉ lệ giữa chiều rộng và chiều cao của pixmap so với layout
+        layout_ratio = self.graphics_view.width() / self.graphics_view.height()
+        pixmap_ratio = pixmap.width() / pixmap.height()
+        
+        # Thay đổi kích thước của pixmap sao cho phù hợp với layout
+        if layout_ratio > pixmap_ratio:
+            pixmap = pixmap.scaledToWidth(self.graphics_view.width())
+        else:
+            pixmap = pixmap.scaledToHeight(self.graphics_view.height())
+        
+        # Tạo QGraphicsPixmapItem và thêm vào QGraphicsScene
+        self._photo = QtWidgets.QGraphicsPixmapItem(pixmap)
+        self.scene.addItem(self._photo)
 
-    def swipeTriggered(self, gesture):
-        pass
-
-app = QApplication([sys.argv])
-
-view = View()
-view.show()
-
-app.exec()
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    widget = MyWidget()
+    widget.show()
+    sys.exit(app.exec())
