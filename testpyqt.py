@@ -20,35 +20,60 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout,
 from PyQt6.QtGui import QPixmap, QTransform
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent, QRectF
 import display
-
-class PhotoViewer(QtWidgets.QGraphicsView):
-    photoClicked = QtCore.pyqtSignal(QtCore.QPointF)
-
-    def __init__(self, parent):
+class PhotoViewer(QGraphicsView):
+    def __init__(self, parent=None):
         super(PhotoViewer, self).__init__(parent)
-        self._zoom = 0
+        self.setScene(QGraphicsScene(self))
+        self._photo = QGraphicsPixmapItem()
+        self.scene().addItem(self._photo)
         self._empty = True
-        self._scene = QtWidgets.QGraphicsScene(self)
-        self._photo = QtWidgets.QGraphicsPixmapItem()
-        layout_size = self.parent().size() if self.parent() else QtCore.QSize(1000, 1000)  # Default size if no parent
-        
-        # Tạo QPixmap với kích thước của layout
-        pixmap = QtGui.QPixmap(layout_size)
-        
-        # Đặt QPixmap vào QGraphicsPixmapItem
-        self._photo.setPixmap(pixmap)
-        self._scene.addItem(self._photo)
-        self.setScene(self._scene)
-        self.setTransformationAnchor(
-            QtWidgets.QGraphicsView.ViewportAnchor.AnchorUnderMouse)
-        self.setResizeAnchor(
-            QtWidgets.QGraphicsView.ViewportAnchor.AnchorUnderMouse)
-        self.setVerticalScrollBarPolicy(
-            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(
-            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._zoom = 0
+
+        self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+        self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setBackgroundBrush(QtGui.QBrush(QtGui.QColor(300, 300, 300)))
         self.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
+
+    def event(self, event):
+        if event.type() == QEvent.Type.Gesture:
+            gesture = event.gesture(Qt.GestureType.PinchGesture)
+            if gesture:
+                self.handle_pinch(gesture)
+                return True
+        return super().event(event)
+
+    def handle_pinch(self, gesture):
+        factor = gesture.scaleFactor()
+        if self.hasPhoto():
+            if gesture.scaleFactor().y() > 0:
+                factor = 1.25
+                self._zoom += 1
+            else:
+                factor = 0.8
+                self._zoom -= 1
+            if self._zoom > 0:
+                self.scale(factor, factor)
+            elif self._zoom <= 0:
+                self.fitInView()
+            else:
+                self._zoom = 0 
+
+    def setPhoto(self, pixmap=None):
+        self._zoom = 0
+        if pixmap and not pixmap.isNull():
+            self._empty = False
+            self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
+            self._photo.setPixmap(pixmap)
+            self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+            self.fitInView(self._photo, Qt.AspectRatioMode.KeepAspectRatio)
+            self.setSceneRect(QRectF(self._photo.pixmap().rect()))
+        else:
+            self._empty = True
+            self.setDragMode(QGraphicsView.DragMode.NoDrag)
+            self._photo.setPixmap(QPixmap())
+            self.setSceneRect(QRectF()) 
 
     def hasPhoto(self):
         return not self._empty
@@ -113,33 +138,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
             self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
         elif not self._photo.pixmap().isNull():
             self.setDragMode(QtWidgets.QGraphicsView.DragMode.ScrollHandDrag)
-    def event(self,event):
-        if event.type() == QEvent.Type.Gesture:
-            gesture = event.gesture(Qt.GestureType.PinchGesture)
-            print(gesture)
-            if gesture:
-                self.handle_pinch(gesture)
-                return True
-        return super().event(event)
-
-    def handle_pinch(self, gesture):
-        factor = gesture.scaleFactor()
-        pixmap4 = self.image.scaled(64, 64, QtCore.Qt.KeepAspectRatio)
-        self.image = self.image.scaled(self.image.size() * factor)
-        self._photo.setPixmap(pixmap4* factor)
-        if self.hasPhoto():
-            if gesture.scaleFactor().y() > 0:
-                factor = 1.25
-                self._zoom += 1
-            else:
-                factor = 0.8
-                self._zoom -= 1
-            if self._zoom > 0:
-                self.scale(factor, factor)
-            elif self._zoom <= 0:
-                self.fitInView()
-            else:
-                self._zoom = 0        
+       
 
     def mousePressEvent(self, event):
         if self._photo.isUnderMouse():
@@ -268,20 +267,20 @@ class MainWindow(QMainWindow):
             self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
             self.showMaximized()
 
-    # def event(self,event):
-    #     if event.type() == QEvent.Type.Gesture:
-    #         gesture = event.gesture(Qt.GestureType.PinchGesture)
-    #         print(gesture)
-    #         if gesture:
-    #             self.handle_pinch(gesture)
-    #             return True
-    #     return super().event(event)
+    def event(self,event):
+        if event.type() == QEvent.Type.Gesture:
+            gesture = event.gesture(Qt.GestureType.PinchGesture)
+            print(gesture)
+            if gesture:
+                self.handle_pinch(gesture)
+                return True
+        return super().event(event)
 
-    # def handle_pinch(self, gesture):
-    #     scale_factor = gesture.scaleFactor()
-    #     size = self.image.size()
-    #     pixmap = self.image.scaled(size.width*scale_factor,size.height*scale_factor, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
-    #     self.uic.image_label.setPixmap(pixmap)
+    def handle_pinch(self, gesture):
+        scale_factor = gesture.scaleFactor()
+        size = self.image.size()
+        pixmap = self.image.scaled(size.width*scale_factor,size.height*scale_factor, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        self.uic.image_label.setPixmap(pixmap)
         
 
     def wheelEvent(self, event):
