@@ -38,6 +38,10 @@ class PhotoViewer(QGraphicsView):
         self.setBackgroundBrush(QtGui.QBrush(QtGui.QColor(300, 300, 300)))
         self.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
 
+        self.viewport().setAcceptDrops(True)
+        self.setAttribute(Qt.WidgetAttribute.WA_AcceptTouchEvents)
+        self.viewport().grabGesture(Qt.GestureType.PinchGesture)
+
     def event(self, event):
         if event.type() == QEvent.Type.Gesture:
             gesture = event.gesture(Qt.GestureType.PinchGesture)
