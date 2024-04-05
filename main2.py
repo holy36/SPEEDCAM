@@ -55,9 +55,14 @@ class PhotoViewer(QtWidgets.QGraphicsView):
 
     def handle_pinch(self, gesture):
         scale_factor = gesture.scaleFactor()
-        if self._zoom <= 0:
+        if(scale_factor>1):
+            self._zoom +=1
+        else:
+            self._zoom -=1
+        if self._zoom > 0:
+            self.scale(scale_factor,scale_factor)
+        else:
             self.fitInView()
-        self.scale(scale_factor,scale_factor)
         print(scale_factor)
 
     def hasPhoto(self):
