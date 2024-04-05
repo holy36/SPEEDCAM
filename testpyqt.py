@@ -45,6 +45,7 @@ class PhotoViewer(QGraphicsView):
     def event(self, event):
         print(event)
         if event.type() == QEvent.Type.Gesture:
+            print("event")
             print(event)
             gesture = event.gesture(Qt.GestureType.PinchGesture)
             if gesture:
