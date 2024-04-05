@@ -267,21 +267,21 @@ class MainWindow(QMainWindow):
             self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
             self.showMaximized()
 
-    def event(self,event):
-        if event.type() == QEvent.Type.Gesture:
-            gesture = event.gesture(Qt.GestureType.PinchGesture)
-            print(gesture)
-            if gesture:
-                self.handle_pinch(gesture)
-                return True
-        return super().event(event)
+    # def event(self,event):
+    #     if event.type() == QEvent.Type.Gesture:
+    #         gesture = event.gesture(Qt.GestureType.PinchGesture)
+    #         print(gesture)
+    #         if gesture:
+    #             self.handle_pinch(gesture)
+    #             return True
+    #     return super().event(event)
 
-    def handle_pinch(self, gesture):
-        print(gesture.scaleFactor())
-        scale_factor = gesture.scaleFactor()
-        pixmap4 = self.image.scaled(64, 64, QtCore.Qt.KeepAspectRatio)
-        self.image = self.image.scaled(self.image.size() * scale_factor)
-        self.uic.image_label.setPixmap(pixmap4* scale_factor)
+    # def handle_pinch(self, gesture):
+    #     print(gesture.scaleFactor())
+    #     scale_factor = gesture.scaleFactor()
+    #     pixmap4 = self.image.scaled(64, 64, QtCore.Qt.KeepAspectRatio)
+    #     self.image = self.image.scaled(self.image.size() * scale_factor)
+    #     self.uic.image_label.setPixmap(pixmap4* scale_factor)
 
         
 
