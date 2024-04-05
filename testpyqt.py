@@ -21,6 +21,8 @@ from PyQt6.QtGui import QPixmap, QTransform
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent, QRectF
 import display
 class PhotoViewer(QGraphicsView):
+    photoClicked = QtCore.pyqtSignal(QtCore.QPointF)
+
     def __init__(self, parent=None):
         super(PhotoViewer, self).__init__(parent)
         self.setScene(QGraphicsScene(self))
