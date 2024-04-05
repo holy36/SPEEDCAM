@@ -222,7 +222,7 @@ class MainWindow(QMainWindow):
     def event(self,event):
         if event.type() == QEvent.Type.Gesture:
             gesture = event.gesture(Qt.GestureType.PinchGesture)
-            print(gesture)
+            # print(gesture)
             if gesture:
                 self.handle_pinch(gesture)
                 return True
@@ -232,7 +232,8 @@ class MainWindow(QMainWindow):
         scale_factor = gesture.scaleFactor()
         size = self.image.size()
         
-        self.viewer.scale(size.width()*scale_factor,size.height()*scale_factor)
+        self.viewer.scale(scale_factor,scale_factor)
+        print(scale_factor)
         
 
     def wheelEvent(self, event):
