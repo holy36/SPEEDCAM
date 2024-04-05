@@ -170,6 +170,8 @@ class MainWindow(QMainWindow):
         self.uic.maxbutton.clicked.connect(self.maximize_window)
         self.uic.bground.setStyleSheet("background-color: #949084; color: white;")
         self.uic.bground.setText("Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab")
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
 
 
