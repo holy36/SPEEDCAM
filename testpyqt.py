@@ -51,20 +51,21 @@ class PhotoViewer(QGraphicsView):
         return super().event(event)
 
     def handle_pinch(self, gesture):
-        factor = gesture.scaleFactor()
-        if self.hasPhoto():
-            if gesture.scaleFactor().y() > 0:
-                factor = 1.25
-                self._zoom += 1
-            else:
-                factor = 0.8
-                self._zoom -= 1
-            if self._zoom > 0:
-                self.scale(factor, factor)
-            elif self._zoom <= 0:
-                self.fitInView()
-            else:
-                self._zoom = 0 
+            if isinstance(gesture, QPinchGesture):
+                factor = gesture.scaleFactor()
+                if self.hasPhoto():
+                    if factor.y() > 1:
+                        factor = 1.25
+                        self._zoom += 1
+                    else:
+                        factor = 0.8
+                        self._zoom -= 1
+                    if self._zoom > 0:
+                        self.scale(factor, factor)
+                    elif self._zoom <= 0:
+                        self.fitInView(self.scene().sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
+                    else:
+                        self._zoom = 0
 
     def setPhoto(self, pixmap=None):
         self._zoom = 0
