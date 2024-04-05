@@ -231,7 +231,7 @@ class MainWindow(QMainWindow):
     def handle_pinch(self, gesture):
         scale_factor = gesture.scaleFactor()
         size = self.image.size()
-        pixmap = self.image.scaled(size.width*scale_factor,size.height*scale_factor, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        pixmap = self.image.scaled(size.width()*scale_factor,size.height()*scale_factor, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         self.uic.image_label.setPixmap(pixmap)
         
 
