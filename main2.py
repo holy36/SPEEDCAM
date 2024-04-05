@@ -239,7 +239,7 @@ class MainWindow(QMainWindow):
         else:
             self.uic.maxbutton.setText("Thu nhỏ")
             icon1 = QtGui.QIcon()
-            icon1.addPixmap(QtGui.QPixmap("icon\\54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+            icon1.addPixmap(QtGui.QPixmap("icon/54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
             self.uic.maxbutton.setIcon(icon1)
             self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
             self.showMaximized()
