@@ -55,6 +55,8 @@ class PhotoViewer(QtWidgets.QGraphicsView):
 
     def handle_pinch(self, gesture):
         scale_factor = gesture.scaleFactor()
+        if self._zoom <= 0:
+            self.fitInView()
         self.scale(scale_factor,scale_factor)
         print(scale_factor)
 
@@ -79,20 +81,16 @@ class PhotoViewer(QtWidgets.QGraphicsView):
             self._zoom = 0
 
     def setPhoto(self, pixmap=None):
-        self._empty = False
         self._zoom = 0
-        self._photo.setPixmap(pixmap)
+        if pixmap and not pixmap.isNull():
+            self._empty = False
+            self.setDragMode(QtWidgets.QGraphicsView.DragMode.ScrollHandDrag)
+            self._photo.setPixmap(pixmap)
+        else:
+            self._empty = True
+            self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
+            self._photo.setPixmap(QtGui.QPixmap())
         self.fitInView()
-        # self._zoom = 0
-        # if pixmap and not pixmap.isNull():
-        #     self._empty = False
-        #     self.setDragMode(QtWidgets.QGraphicsView.DragMode.ScrollHandDrag)
-        #     self._photo.setPixmap(pixmap)
-        # else:
-        #     self._empty = True
-        #     self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
-        #     self._photo.setPixmap(QtGui.QPixmap())
-        # self.fitInView()
 
     def wheelEvent(self, event):
         if self.hasPhoto():
