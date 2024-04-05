@@ -229,7 +229,6 @@ class MainWindow(QMainWindow):
     def maximize_window(self):
         # Maximize hoặc phục hồi cửa sổ
         if self.isMaximized():
-            self.uic.maxbutton.setText("Phóng to")
             icon1 = QtGui.QIcon()
             icon1.addPixmap(QtGui.QPixmap("icon/maximize-icon-512x512-ari7tfdx.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
             self.uic.maxbutton.setIcon(icon1)
@@ -237,7 +236,6 @@ class MainWindow(QMainWindow):
             self.showNormal()
 
         else:
-            self.uic.maxbutton.setText("Thu nhỏ")
             icon1 = QtGui.QIcon()
             icon1.addPixmap(QtGui.QPixmap("icon/54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
             self.uic.maxbutton.setIcon(icon1)
