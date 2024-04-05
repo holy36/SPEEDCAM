@@ -31,6 +31,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         self._scene = QtWidgets.QGraphicsScene(self)
         self._photo = QtWidgets.QGraphicsPixmapItem()
         self._scene.addItem(self._photo)
+        self.grabGesture(Qt.GestureType.PinchGesture)
         self.setScene(self._scene)
         self.setTransformationAnchor(
             QtWidgets.QGraphicsView.ViewportAnchor.AnchorUnderMouse)
@@ -43,6 +44,22 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         self.setBackgroundBrush(QtGui.QBrush(QtGui.QColor(30, 30, 30)))
         self.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
 
+    def event(self,event):
+        if event.type() == QEvent.Type.Gesture:
+            gesture = event.gesture(Qt.GestureType.PinchGesture)
+            # print(gesture)
+            if gesture:
+                self.handle_pinch(gesture)
+                return True
+        return super().event(event)
+
+    def handle_pinch(self, gesture):
+        scale_factor = gesture.scaleFactor()
+        size = self.image.size()
+        
+        self.viewer.scale(scale_factor,scale_factor)
+        print(scale_factor)
+        
     def hasPhoto(self):
         return not self._empty
 
@@ -219,21 +236,6 @@ class MainWindow(QMainWindow):
             self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
             self.showMaximized()
 
-    def event(self,event):
-        if event.type() == QEvent.Type.Gesture:
-            gesture = event.gesture(Qt.GestureType.PinchGesture)
-            # print(gesture)
-            if gesture:
-                self.handle_pinch(gesture)
-                return True
-        return super().event(event)
-
-    def handle_pinch(self, gesture):
-        scale_factor = gesture.scaleFactor()
-        size = self.image.size()
-        
-        self.viewer.scale(scale_factor,scale_factor)
-        print(scale_factor)
         
 
     def wheelEvent(self, event):
