@@ -63,7 +63,7 @@ class PhotoViewer(QGraphicsView):
                     if self._zoom > 0:
                         self.scale(factor, factor)
                     elif self._zoom <= 0:
-                        self.fitInView(self.scene().sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
+                        self.fitInView()
                     else:
                         self._zoom = 0
 
