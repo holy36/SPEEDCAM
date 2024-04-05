@@ -72,20 +72,27 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                 scenerect = self.transform().mapRect(rect)
                 factor = min(viewrect.width() / scenerect.width(),
                              viewrect.height() / scenerect.height())
+                print(viewrect)
+                print(scenerect)
                 self.scale(factor, factor)
+                pass
             self._zoom = 0
 
     def setPhoto(self, pixmap=None):
+        self._empty = False
         self._zoom = 0
-        if pixmap and not pixmap.isNull():
-            self._empty = False
-            self.setDragMode(QtWidgets.QGraphicsView.DragMode.ScrollHandDrag)
-            self._photo.setPixmap(pixmap)
-        else:
-            self._empty = True
-            self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
-            self._photo.setPixmap(QtGui.QPixmap())
+        self._photo.setPixmap(pixmap)
         self.fitInView()
+        # self._zoom = 0
+        # if pixmap and not pixmap.isNull():
+        #     self._empty = False
+        #     self.setDragMode(QtWidgets.QGraphicsView.DragMode.ScrollHandDrag)
+        #     self._photo.setPixmap(pixmap)
+        # else:
+        #     self._empty = True
+        #     self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
+        #     self._photo.setPixmap(QtGui.QPixmap())
+        # self.fitInView()
 
     def wheelEvent(self, event):
         if self.hasPhoto():
@@ -207,6 +214,7 @@ class MainWindow(QMainWindow):
         self.uic.device_list.setDisabled(1)
         self.uic.accept_button.setDisabled(1)
         self.uic.deny_button.setDisabled(1)
+        self.viewer.fitInView()
     
     def exit(self):
         # Thực hiện các hành động bạn muốn khi thoát ứng dụng
