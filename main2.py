@@ -27,6 +27,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
     def __init__(self, parent):
         super(PhotoViewer, self).__init__(parent)
         self._zoom = 0
+        self.shown = False
         self._empty = True
         self._scene = QtWidgets.QGraphicsScene(self)
         self._photo = QtWidgets.QGraphicsPixmapItem()
@@ -68,6 +69,11 @@ class PhotoViewer(QtWidgets.QGraphicsView):
     def hasPhoto(self):
         return not self._empty
 
+    def showEvent(self, event):
+        super().showEvent(event)
+        if not self.shown:
+            self.shown = True
+            # self.fitInView()
     def fitInView(self, scale=True):
         rect = QtCore.QRectF(self._photo.pixmap().rect())
         if not rect.isNull():
@@ -81,6 +87,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                              viewrect.height() / scenerect.height())
                 print(viewrect)
                 print(scenerect)
+                print(unity)
                 self.scale(factor, factor)
                 pass
             self._zoom = 0
@@ -162,7 +169,6 @@ class MainWindow(QMainWindow):
         self.viewer.setPhoto(QtGui.QPixmap('test.jpg'))
         self.thread = {}
         self.grabGesture(Qt.GestureType.PinchGesture)
-        self.showMaximized()
         self.uic.connect_button.clicked.connect(self.connect)
         self.uic.cancel_button.clicked.connect(self.cancel_connection)
         self.uic.device_list.setPlaceholderText( "Danh sách thiết bị Bluetooth")
@@ -174,6 +180,9 @@ class MainWindow(QMainWindow):
         self.uic.bground.setStyleSheet("background-color: #949084; color: white;")
         self.uic.bground.setText("Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.showMaximized()
+        self.viewer.fitInView()
         # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) 
         self.uic.bground.setDisabled(False)
         self.uic.bground.mouseMoveEvent = self.MoveWindow
@@ -216,7 +225,6 @@ class MainWindow(QMainWindow):
         self.uic.device_list.setDisabled(1)
         self.uic.accept_button.setDisabled(1)
         self.uic.deny_button.setDisabled(1)
-        self.viewer.fitInView()
     
     def MoveWindow(self, event):
         if not self.isMaximized():
@@ -336,7 +344,6 @@ class MainWindow(QMainWindow):
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread[1].finished.connect(self.thread[1].deleteLater)
         self.worker.progress.connect(self.reportProgress)
-
         # Step 6: Start the thread
         self.thread[1].start()
 

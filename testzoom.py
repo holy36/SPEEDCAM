@@ -27,6 +27,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
     def __init__(self, parent):
         super(PhotoViewer, self).__init__(parent)
         self._zoom = 0
+        self.shown = False
         self._empty = True
         self._scene = QtWidgets.QGraphicsScene(self)
         self._photo = QtWidgets.QGraphicsPixmapItem()
@@ -68,35 +69,30 @@ class PhotoViewer(QtWidgets.QGraphicsView):
     def hasPhoto(self):
         return not self._empty
 
+    def showEvent(self, event):
+        super().showEvent(event)
+        if not self.shown:
+            self.shown = True
+            # self.fitInView()
     def fitInView(self, scale=True):
-        pixmap_rect = self._photo.pixmap().rect()
-        if not pixmap_rect.isNull():
-            # Chuyển đổi QRect sang QRectF
-            pixmap_rectf = QtCore.QRectF(pixmap_rect)
-            # Tính toán kích thước của QGraphicsView
-            view_size = self.size()
-            # Đặt kích thước của cảnh để phù hợp với kích thước hình ảnh
-            self.setSceneRect(pixmap_rectf)
-            # Tính toán tỷ lệ fit cho hình ảnh
+        rect = QtCore.QRectF(self._photo.pixmap().rect())
+        if not rect.isNull():
+            self.setSceneRect(rect)
             if self.hasPhoto():
-                unity = QtCore.QRectF(0, 0, 1, 1)
-                unity = self.transform().mapRect(unity)
-                if unity.width() != 0 and unity.height() != 0:
-                    self.scale(1 / unity.width(), 1 / unity.height())
-                    factor = min(view_size.width() / unity.width(), view_size.height() / unity.height())
-                print(unity.width())
-                print(unity.height())
+                unity = self.transform().mapRect(QtCore.QRectF(0, 0, 1, 1))
+                self.scale(1 / unity.width(), 1 / unity.height())
+                viewrect = self.viewport().rect()
+                scenerect = self.transform().mapRect(rect)
+                factor = min(viewrect.width() / scenerect.width(),
+                             viewrect.height() / scenerect.height())
+                print(viewrect)
+                print(scenerect)
+                print(unity)
                 self.scale(factor, factor)
                 pass
             self._zoom = 0
-            # Áp dụng tỷ lệ
-            self.scale(factor, factor)
 
     def setPhoto(self, pixmap=None):
-        # self._empty = False
-        # self._zoom = 0
-        # self._photo.setPixmap(pixmap)
-        # self.fitInView()
         self._zoom = 0
         if pixmap and not pixmap.isNull():
             self._empty = False
@@ -173,7 +169,6 @@ class MainWindow(QMainWindow):
         self.viewer.setPhoto(QtGui.QPixmap('test.jpg'))
         self.thread = {}
         self.grabGesture(Qt.GestureType.PinchGesture)
-        self.showMaximized()
         self.uic.connect_button.clicked.connect(self.connect)
         self.uic.cancel_button.clicked.connect(self.cancel_connection)
         self.uic.device_list.setPlaceholderText( "Danh sách thiết bị Bluetooth")
@@ -186,10 +181,8 @@ class MainWindow(QMainWindow):
         self.uic.bground.setText("Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.showMaximized()
         self.viewer.fitInView()
-
-
-        
 
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("icon\\window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
