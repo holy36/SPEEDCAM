@@ -270,12 +270,15 @@ class MainWindow(QMainWindow):
 
 
     def device_list_select(self):
-        option = self.uic.device_list.currentText()
-        device_address = option[:17]
-        self.thread[2] = ThreadClass(index=1,mac_id=device_address)
-        self.thread[2].start()
-        self.thread[2].signal.connect(self.my_function)
-        self.thread[2].connect_status.connect(self.status_change)
+        if self.uic.device_list.count() == 0:
+            self.uic.device_list.setPlaceholderText( "Không có thiết bị Bluetooth")
+        else:    
+            option = self.uic.device_list.currentText()
+            device_address = option[:17]
+            self.thread[2] = ThreadClass(index=1,mac_id=device_address)
+            self.thread[2].start()
+            self.thread[2].signal.connect(self.my_function)
+            self.thread[2].connect_status.connect(self.status_change)
     def my_function(self, msg):
         i = self.uic.MainWindow.sender().index
         self.uic.image_label.setText(msg)
@@ -331,6 +334,7 @@ class MainWindow(QMainWindow):
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread[1].finished.connect(self.thread[1].deleteLater)
         self.worker.progress.connect(self.reportProgress)
+        self.uic.device_list.setPlaceholderText( "Danh sách thiết bị Bluetooth")
         # Step 6: Start the thread
         self.thread[1].start()
 
