@@ -55,44 +55,58 @@ class PhotoViewer(QtWidgets.QGraphicsView):
 
     def handle_pinch(self, gesture):
         scale_factor = gesture.scaleFactor()
-        self.scale(scale_factor,scale_factor)
+        if(scale_factor>1):
+            self._zoom +=(scale_factor-1)
+        else:
+            self._zoom -=(1-scale_factor)
+        if self._zoom > 0:
+            self.scale(scale_factor,scale_factor)
+        else:
+            self.fitInView()
         print(scale_factor)
 
     def hasPhoto(self):
         return not self._empty
 
     def fitInView(self, scale=True):
-        rect = QtCore.QRectF(self._photo.pixmap().rect())
-        if not rect.isNull():
-            self.setSceneRect(rect)
+        pixmap_rect = self._photo.pixmap().rect()
+        if not pixmap_rect.isNull():
+            # Chuyển đổi QRect sang QRectF
+            pixmap_rectf = QtCore.QRectF(pixmap_rect)
+            # Tính toán kích thước của QGraphicsView
+            view_size = self.size()
+            # Đặt kích thước của cảnh để phù hợp với kích thước hình ảnh
+            self.setSceneRect(pixmap_rectf)
+            # Tính toán tỷ lệ fit cho hình ảnh
             if self.hasPhoto():
-                unity = self.transform().mapRect(QtCore.QRectF(0, 0, 1, 1))
-                self.scale(1 / unity.width(), 1 / unity.height())
-                viewrect = self.viewport().rect()
-                scenerect = self.transform().mapRect(rect)
-                factor = min(viewrect.width() / scenerect.width(),
-                             viewrect.height() / scenerect.height())
-                print(viewrect)
-                print(scenerect)
+                unity = QtCore.QRectF(0, 0, 1, 1)
+                unity = self.transform().mapRect(unity)
+                if unity.width() != 0 and unity.height() != 0:
+                    self.scale(1 / unity.width(), 1 / unity.height())
+                    factor = min(view_size.width() / unity.width(), view_size.height() / unity.height())
+                print(unity.width())
+                print(unity.height())
                 self.scale(factor, factor)
                 pass
             self._zoom = 0
+            # Áp dụng tỷ lệ
+            self.scale(factor, factor)
 
     def setPhoto(self, pixmap=None):
-        self._empty = False
-        self._zoom = 0
-        self._photo.setPixmap(pixmap)
-        self.fitInView()
+        # self._empty = False
         # self._zoom = 0
-        # if pixmap and not pixmap.isNull():
-        #     self._empty = False
-        #     self.setDragMode(QtWidgets.QGraphicsView.DragMode.ScrollHandDrag)
-        #     self._photo.setPixmap(pixmap)
-        # else:
-        #     self._empty = True
-        #     self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
-        #     self._photo.setPixmap(QtGui.QPixmap())
+        # self._photo.setPixmap(pixmap)
         # self.fitInView()
+        self._zoom = 0
+        if pixmap and not pixmap.isNull():
+            self._empty = False
+            self.setDragMode(QtWidgets.QGraphicsView.DragMode.ScrollHandDrag)
+            self._photo.setPixmap(pixmap)
+        else:
+            self._empty = True
+            self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
+            self._photo.setPixmap(QtGui.QPixmap())
+        self.fitInView()
 
     def wheelEvent(self, event):
         if self.hasPhoto():
@@ -172,7 +186,7 @@ class MainWindow(QMainWindow):
         self.uic.bground.setText("Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-
+        self.viewer.fitInView()
 
 
         
@@ -216,7 +230,6 @@ class MainWindow(QMainWindow):
         self.uic.device_list.setDisabled(1)
         self.uic.accept_button.setDisabled(1)
         self.uic.deny_button.setDisabled(1)
-        self.viewer.fitInView()
     
     def exit(self):
         # Thực hiện các hành động bạn muốn khi thoát ứng dụng

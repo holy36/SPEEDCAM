@@ -15,10 +15,113 @@ from PyQt6.QtCore import QCoreApplication
 import bluetooth
 import sys
 from time import sleep
-from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture
+from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent
+from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent, QPoint, QPointF  
 import display
+
+
+class PhotoViewer(QtWidgets.QGraphicsView):
+    photoClicked = QtCore.pyqtSignal(QtCore.QPointF)
+
+    def __init__(self, parent):
+        super(PhotoViewer, self).__init__(parent)
+        self._zoom = 0
+        self._empty = True
+        self._scene = QtWidgets.QGraphicsScene(self)
+        self._photo = QtWidgets.QGraphicsPixmapItem()
+        self._scene.addItem(self._photo)
+        self.grabGesture(Qt.GestureType.PinchGesture)
+        self.setScene(self._scene)
+        self.setTransformationAnchor(
+            QtWidgets.QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+        self.setResizeAnchor(
+            QtWidgets.QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+        self.setVerticalScrollBarPolicy(
+            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setBackgroundBrush(QtGui.QBrush(QtGui.QColor(30, 30, 30)))
+        self.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
+
+    def event(self,event):
+        if event.type() == QEvent.Type.Gesture:
+            gesture = event.gesture(Qt.GestureType.PinchGesture)
+            # print(gesture)
+            if gesture:
+                self.handle_pinch(gesture)
+                return True
+        return super().event(event)
+
+    def handle_pinch(self, gesture):
+        scale_factor = gesture.scaleFactor()
+        if(scale_factor>1):
+            self._zoom +=(scale_factor-1)
+        else:
+            self._zoom -=(1-scale_factor)
+        if self._zoom > 0:
+            self.scale(scale_factor,scale_factor)
+        else:
+            self.fitInView()
+        print(scale_factor)
+
+    def hasPhoto(self):
+        return not self._empty
+
+    def fitInView(self, scale=True):
+        rect = QtCore.QRectF(self._photo.pixmap().rect())
+        if not rect.isNull():
+            self.setSceneRect(rect)
+            if self.hasPhoto():
+                unity = self.transform().mapRect(QtCore.QRectF(0, 0, 1, 1))
+                self.scale(1 / unity.width(), 1 / unity.height())
+                viewrect = self.viewport().rect()
+                scenerect = self.transform().mapRect(rect)
+                factor = min(viewrect.width() / scenerect.width(),
+                             viewrect.height() / scenerect.height())
+                print(viewrect)
+                print(scenerect)
+                self.scale(factor, factor)
+                pass
+            self._zoom = 0
+
+    def setPhoto(self, pixmap=None):
+        self._zoom = 0
+        if pixmap and not pixmap.isNull():
+            self._empty = False
+            self.setDragMode(QtWidgets.QGraphicsView.DragMode.ScrollHandDrag)
+            self._photo.setPixmap(pixmap)
+        else:
+            self._empty = True
+            self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
+            self._photo.setPixmap(QtGui.QPixmap())
+        self.fitInView()
+
+    def wheelEvent(self, event):
+        if self.hasPhoto():
+            if event.angleDelta().y() > 0:
+                factor = 1.25
+                self._zoom += 1
+            else:
+                factor = 0.8
+                self._zoom -= 1
+            if self._zoom > 0:
+                self.scale(factor, factor)
+            elif self._zoom <= 0:
+                self.fitInView()
+            else:
+                self._zoom = 0
+
+    def toggleDragMode(self):
+        if self.dragMode() == QtWidgets.QGraphicsView.DragMode.ScrollHandDrag:
+            self.setDragMode(QtWidgets.QGraphicsView.DragMode.NoDrag)
+        elif not self._photo.pixmap().isNull():
+            self.setDragMode(QtWidgets.QGraphicsView.DragMode.ScrollHandDrag)
+
+    def mousePressEvent(self, event):
+        if self._photo.isUnderMouse():
+            self.photoClicked.emit(self.mapToScene(event.position().toPoint()))
+        super(PhotoViewer, self).mousePressEvent(event)
 
 class Worker(QObject):
     finished = pyqtSignal()
@@ -54,6 +157,9 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.uic = display.Ui_MainWindow()
         self.uic.setupUi(self)
+        self.viewer = PhotoViewer(self)
+        self.uic.image_layout.addWidget(self.viewer)
+        self.viewer.setPhoto(QtGui.QPixmap('test.jpg'))
         self.thread = {}
         self.grabGesture(Qt.GestureType.PinchGesture)
         self.showMaximized()
@@ -68,36 +174,34 @@ class MainWindow(QMainWindow):
         self.uic.bground.setStyleSheet("background-color: #949084; color: white;")
         self.uic.bground.setText("Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-
-
-        
+        # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) 
+        self.uic.bground.setDisabled(False)
+        self.uic.bground.mouseMoveEvent = self.MoveWindow
+        self.uic.bground.mousePressEvent = self.mousePressEvent
+        self.clickPosition = QPoint()
 
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("icon\\window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon.addPixmap(QtGui.QPixmap("icon/window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.minbutton.setIcon(icon)
         self.uic.minbutton.setIconSize(QtCore.QSize(25, 30))
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("icon\\png-clipart-computer-icons-derosa-music-bluetooth-bluetooth-text-trademark-thumbnail.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon2.addPixmap(QtGui.QPixmap("icon/png-clipart-computer-icons-derosa-music-bluetooth-bluetooth-text-trademark-thumbnail.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.connect_button.setIcon(icon2)
         self.uic.connect_button.setIconSize(QtCore.QSize(25, 30))
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("icon\\pngtree-chek-mark-rounded-icon-tick-box-vector-png-image_17766700.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon3.addPixmap(QtGui.QPixmap("icon/pngtree-chek-mark-rounded-icon-tick-box-vector-png-image_17766700.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.accept_button.setIcon(icon3)
         self.uic.accept_button.setIconSize(QtCore.QSize(25, 30))
         icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap("icon\\473-4730000_deny-comments-saturation-icon-png.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon4.addPixmap(QtGui.QPixmap("icon/473-4730000_deny-comments-saturation-icon-png.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.deny_button.setIcon(icon4)
         self.uic.deny_button.setIconSize(QtCore.QSize(25, 30))
         icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap("icon\\2017609-200.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon5.addPixmap(QtGui.QPixmap("icon/2017609-200.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.quitbutton.setIcon(icon5)
         self.uic.quitbutton.setIconSize(QtCore.QSize(25, 30))
-        self.uic.minbutton.setText("Thu xuống")
-        self.uic.quitbutton.setText("Thoát")
-        self.uic.maxbutton.setText("Thu nhỏ")
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("icon\\54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon1.addPixmap(QtGui.QPixmap("icon/54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.maxbutton.setIcon(icon1)
         self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
 
@@ -112,7 +216,22 @@ class MainWindow(QMainWindow):
         self.uic.device_list.setDisabled(1)
         self.uic.accept_button.setDisabled(1)
         self.uic.deny_button.setDisabled(1)
+        self.viewer.fitInView()
     
+    def MoveWindow(self, event):
+        if not self.isMaximized():
+            if event.buttons() & Qt.MouseButton.LeftButton:
+                new_position = QPoint(int(event.globalPosition().x() - self.clickPosition.x()),
+                                      int(event.globalPosition().y() - self.clickPosition.y()))
+                self.move(self.pos() + new_position)
+                self.clickPosition = event.globalPosition()
+                event.accept()
+
+
+    def mousePressEvent(self, event):
+        self.clickPosition = event.globalPosition()
+        event.accept()
+
     def exit(self):
         # Thực hiện các hành động bạn muốn khi thoát ứng dụng
         QtWidgets.QApplication.quit()
@@ -124,36 +243,19 @@ class MainWindow(QMainWindow):
     def maximize_window(self):
         # Maximize hoặc phục hồi cửa sổ
         if self.isMaximized():
-            self.uic.maxbutton.setText("Phóng to")
             icon1 = QtGui.QIcon()
-            icon1.addPixmap(QtGui.QPixmap("icon\\maximize-icon-512x512-ari7tfdx.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+            icon1.addPixmap(QtGui.QPixmap("icon/maximize-icon-512x512-ari7tfdx.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
             self.uic.maxbutton.setIcon(icon1)
             self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
-            self.showNormal()
-
+            self.resize(800, 600)
         else:
-            self.uic.maxbutton.setText("Thu nhỏ")
             icon1 = QtGui.QIcon()
-            icon1.addPixmap(QtGui.QPixmap("icon\\54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+            icon1.addPixmap(QtGui.QPixmap("icon/54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
             self.uic.maxbutton.setIcon(icon1)
             self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
             self.showMaximized()
 
-    def event(self,event):
-        if event.type() == QEvent.Type.Gesture:
-            gesture = event.gesture(Qt.GestureType.PinchGesture)
-            print(gesture)
-            if gesture:
-                self.handle_pinch(gesture)
-                return True
-        return super().event(event)
-
-    def handle_pinch(self, gesture):
-        print(gesture.scaleFactor())
-        scale_factor = gesture.scaleFactor()
-        pixmap4 = self.image.scaled(64, 64, QtCore.Qt.KeepAspectRatio)
-        self.image = self.image.scaled(self.image.size() * scale_factor)
-        self.uic.image_label.setPixmap(pixmap4* scale_factor)
+        
 
     def wheelEvent(self, event):
         if event.angleDelta().y() > 0:  # Phóng to khi cuộn lên
@@ -163,7 +265,8 @@ class MainWindow(QMainWindow):
 
     def zoom(self, factor):
         self.image = self.image.scaled(self.image.size() * factor)
-        self.uic.image_label.setPixmap(self.image)
+        pixmap = self.image.scaled(self.image.size(), QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        self.uic.image_label.setPixmap(pixmap)
 
 
     def device_list_select(self):
