@@ -17,7 +17,7 @@ import sys
 from time import sleep
 from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent
+from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent, QPoint, QPointF  
 import display
 
 
@@ -174,11 +174,11 @@ class MainWindow(QMainWindow):
         self.uic.bground.setStyleSheet("background-color: #949084; color: white;")
         self.uic.bground.setText("Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-
-
-
-        
+        # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) 
+        self.uic.bground.setDisabled(False)
+        self.uic.bground.mouseMoveEvent = self.MoveWindow
+        self.uic.bground.mousePressEvent = self.mousePressEvent
+        self.clickPosition = QPoint()
 
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("icon/window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -218,6 +218,20 @@ class MainWindow(QMainWindow):
         self.uic.deny_button.setDisabled(1)
         self.viewer.fitInView()
     
+    def MoveWindow(self, event):
+        if not self.isMaximized():
+            if event.buttons() & Qt.MouseButton.LeftButton:
+                new_position = QPoint(int(event.globalPosition().x() - self.clickPosition.x()),
+                                      int(event.globalPosition().y() - self.clickPosition.y()))
+                self.move(self.pos() + new_position)
+                self.clickPosition = event.globalPosition()
+                event.accept()
+
+
+    def mousePressEvent(self, event):
+        self.clickPosition = event.globalPosition()
+        event.accept()
+
     def exit(self):
         # Thực hiện các hành động bạn muốn khi thoát ứng dụng
         QtWidgets.QApplication.quit()
@@ -233,8 +247,7 @@ class MainWindow(QMainWindow):
             icon1.addPixmap(QtGui.QPixmap("icon/maximize-icon-512x512-ari7tfdx.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
             self.uic.maxbutton.setIcon(icon1)
             self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
-            self.showNormal()
-
+            self.resize(800, 600)
         else:
             icon1 = QtGui.QIcon()
             icon1.addPixmap(QtGui.QPixmap("icon/54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
