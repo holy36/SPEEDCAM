@@ -269,7 +269,7 @@ class MainWindow(QMainWindow):
         self.uic.image_label.setPixmap(pixmap)
 
 
-    def device_list_select(self):
+    def device_list_select(self):   
         option = self.uic.device_list.currentText()
         device_address = option[:17]
         self.thread[2] = ThreadClass(index=1,mac_id=device_address)
@@ -310,6 +310,11 @@ class MainWindow(QMainWindow):
 
     def reportProgress(self, n):
         self.uic.device_list.addItem(n)
+    def update_device_list_placeholder(self):       
+        if self.uic.device_list.count() == 0:
+            self.uic.device_list.setPlaceholderText("Không có thiết bị Bluetooth")
+        else:
+            self.uic.device_list.setPlaceholderText("Danh sách thiết bị Bluetooth")
 
     def connect(self):
         # Thiết lập màu của nút thành màu xanh
@@ -331,6 +336,7 @@ class MainWindow(QMainWindow):
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread[1].finished.connect(self.thread[1].deleteLater)
         self.worker.progress.connect(self.reportProgress)
+
         # Step 6: Start the thread
         self.thread[1].start()
 
@@ -351,6 +357,7 @@ class MainWindow(QMainWindow):
         self.thread[1].finished.connect(
             lambda: self.uic.connect_button.setDisabled(0)
         )
+        self.thread[1].finished.connect(self.update_device_list_placeholder)
         # Sau khi tìm thấy các thiết bị, cập nhật lại màu của nút thành màu xanh lá cây
         
 
