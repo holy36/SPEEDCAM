@@ -189,7 +189,9 @@ class MainWindow(QMainWindow):
         self.uic.bground.mousePressEvent = self.mousePressEvent
         self.clickPosition = QPoint()
         self.setWindowTitle("Hệ thống xử lý vi phạm tốc độ")
-        self.setWindowIcon(QtGui.QIcon("icon/Phu_hieu_canh_sat_giao_thong.png"))
+        iconwindow = QtGui.QIcon()
+        iconwindow.addPixmap(QtGui.QPixmap("icon/Phu_hieu_canh_sat_giao_thong.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.setWindowIcon(iconwindow)
 
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("icon/window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
