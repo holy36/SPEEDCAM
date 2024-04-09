@@ -184,10 +184,12 @@ class MainWindow(QMainWindow):
         self.showMaximized()
         self.viewer.fitInView()
         # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) 
-        self.uic.bground.setDisabled(False)
+        self.uic.bground.setDisabled(True)
         self.uic.bground.mouseMoveEvent = self.MoveWindow
         self.uic.bground.mousePressEvent = self.mousePressEvent
         self.clickPosition = QPoint()
+        self.setWindowTitle("Hệ thống xử lý vi phạm tốc độ")
+        self.setWindowIcon(QtGui.QIcon("icon/Phu_hieu_canh_sat_giao_thong.png"))
 
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("icon/window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)

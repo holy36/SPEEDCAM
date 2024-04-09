@@ -15,8 +15,8 @@ from PyQt6.QtCore import QCoreApplication
 import bluetooth
 import sys
 from time import sleep
-from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QMessageBox
+from PyQt6.QtGui import QPixmap, QPainter,QFont
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent, QPoint, QPointF  
 import display
 
@@ -27,6 +27,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
     def __init__(self, parent):
         super(PhotoViewer, self).__init__(parent)
         self._zoom = 0
+        self.shown = False
         self._empty = True
         self._scene = QtWidgets.QGraphicsScene(self)
         self._photo = QtWidgets.QGraphicsPixmapItem()
@@ -68,6 +69,11 @@ class PhotoViewer(QtWidgets.QGraphicsView):
     def hasPhoto(self):
         return not self._empty
 
+    def showEvent(self, event):
+        super().showEvent(event)
+        if not self.shown:
+            self.shown = True
+            # self.fitInView()
     def fitInView(self, scale=True):
         rect = QtCore.QRectF(self._photo.pixmap().rect())
         if not rect.isNull():
@@ -81,6 +87,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                              viewrect.height() / scenerect.height())
                 print(viewrect)
                 print(scenerect)
+                print(unity)
                 self.scale(factor, factor)
                 pass
             self._zoom = 0
@@ -162,7 +169,6 @@ class MainWindow(QMainWindow):
         self.viewer.setPhoto(QtGui.QPixmap('test.jpg'))
         self.thread = {}
         self.grabGesture(Qt.GestureType.PinchGesture)
-        self.showMaximized()
         self.uic.connect_button.clicked.connect(self.connect)
         self.uic.cancel_button.clicked.connect(self.cancel_connection)
         self.uic.device_list.setPlaceholderText( "Danh sách thiết bị Bluetooth")
@@ -174,11 +180,16 @@ class MainWindow(QMainWindow):
         self.uic.bground.setStyleSheet("background-color: #949084; color: white;")
         self.uic.bground.setText("Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.showMaximized()
+        self.viewer.fitInView()
         # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) 
-        self.uic.bground.setDisabled(False)
+        self.uic.bground.setDisabled(True)
         self.uic.bground.mouseMoveEvent = self.MoveWindow
         self.uic.bground.mousePressEvent = self.mousePressEvent
         self.clickPosition = QPoint()
+        self.setWindowTitle("Hệ thống xử lý vi phạm tốc độ")
+        self.setWindowIcon(QtGui.QIcon("icon/Phu_hieu_canh_sat_giao_thong.png"))
 
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("icon/window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -214,10 +225,43 @@ class MainWindow(QMainWindow):
         self.uic.image_label.setScaledContents(True)
 
         self.uic.device_list.setDisabled(1)
-        self.uic.accept_button.setDisabled(1)
+        self.uic.accept_button.setDisabled(0)
+        self.uic.accept_button.clicked.connect(self.accept_information)
+
         self.uic.deny_button.setDisabled(1)
-        self.viewer.fitInView()
     
+    def accept_information(self):
+        with open('test.txt', 'r') as file:
+            merge_text = file.read()
+            if "Phong Canh sat" in merge_text:
+                merge_text = merge_text.replace("Phong Canh sat Giao thong", "Phong Canh sat Giao thong\n")
+        # Đọc hình ảnh và thêm khoảng trắng bên phải
+        image = QPixmap("test.jpg")
+        width = image.width()
+        height = image.height()
+        new_width = int(width * 1.5)  # Tăng chiều rộng lên 50%
+        new_image = QPixmap(new_width, height)
+        new_image.fill(Qt.GlobalColor.white)  # Tạo nền trắng mới
+
+        # Vẽ hình ảnh gốc lên hình mới
+        painter = QPainter(new_image)
+        painter.drawPixmap(0, 0, image)
+        painter.end()
+
+        # Chèn văn bản vào phần trắng bên phải
+        painter = QPainter(new_image)
+        painter.setFont(QFont("Arial", 40))
+        painter.drawText(image.width()+30, 0, new_width - image.width(), height, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, merge_text)
+        painter.end()
+
+        # Lưu hình ảnh với text vào file mới
+        save_path = "merge.png"
+        if save_path:
+            new_image.save(save_path)
+            QMessageBox.information(self, "LoginOutput", "Update thanh cong")
+
+
+
     def MoveWindow(self, event):
         if not self.isMaximized():
             if event.buttons() & Qt.MouseButton.LeftButton:
@@ -269,16 +313,13 @@ class MainWindow(QMainWindow):
         self.uic.image_label.setPixmap(pixmap)
 
 
-    def device_list_select(self):
-        if self.uic.device_list.count() == 0:
-            self.uic.device_list.setPlaceholderText( "Không có thiết bị Bluetooth")
-        else:    
-            option = self.uic.device_list.currentText()
-            device_address = option[:17]
-            self.thread[2] = ThreadClass(index=1,mac_id=device_address)
-            self.thread[2].start()
-            self.thread[2].signal.connect(self.my_function)
-            self.thread[2].connect_status.connect(self.status_change)
+    def device_list_select(self):   
+        option = self.uic.device_list.currentText()
+        device_address = option[:17]
+        self.thread[2] = ThreadClass(index=1,mac_id=device_address)
+        self.thread[2].start()
+        self.thread[2].signal.connect(self.my_function)
+        self.thread[2].connect_status.connect(self.status_change)
     def my_function(self, msg):
         i = self.uic.MainWindow.sender().index
         self.uic.image_label.setText(msg)
@@ -313,6 +354,11 @@ class MainWindow(QMainWindow):
 
     def reportProgress(self, n):
         self.uic.device_list.addItem(n)
+    def update_device_list_placeholder(self):       
+        if self.uic.device_list.count() == 0:
+            self.uic.device_list.setPlaceholderText("Không có thiết bị Bluetooth")
+        else:
+            self.uic.device_list.setPlaceholderText("Danh sách thiết bị Bluetooth")
 
     def connect(self):
         # Thiết lập màu của nút thành màu xanh
@@ -334,7 +380,6 @@ class MainWindow(QMainWindow):
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread[1].finished.connect(self.thread[1].deleteLater)
         self.worker.progress.connect(self.reportProgress)
-        self.uic.device_list.setPlaceholderText( "Danh sách thiết bị Bluetooth")
         # Step 6: Start the thread
         self.thread[1].start()
 
@@ -355,6 +400,7 @@ class MainWindow(QMainWindow):
         self.thread[1].finished.connect(
             lambda: self.uic.connect_button.setDisabled(0)
         )
+        self.thread[1].finished.connect(self.update_device_list_placeholder)
         # Sau khi tìm thấy các thiết bị, cập nhật lại màu của nút thành màu xanh lá cây
         
 
