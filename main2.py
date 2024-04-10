@@ -492,7 +492,7 @@ class SearchUI(QMainWindow):
 
     def exit(self):
         # Thực hiện các hành động bạn muốn khi thoát ứng dụng
-        QtWidgets.QApplication.quit()
+        self.close()
 
     def minimize_window(self):
         # Minimize cửa sổ
