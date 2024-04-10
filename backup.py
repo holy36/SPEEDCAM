@@ -15,11 +15,10 @@ from PyQt6.QtCore import QCoreApplication
 import bluetooth
 import sys
 from time import sleep
-from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QMessageBox
-from PyQt6.QtGui import QPixmap, QPainter,QFont
+from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
+from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent, QPoint, QPointF  
-import display,search
-
+import display
 
 
 class PhotoViewer(QtWidgets.QGraphicsView):
@@ -178,7 +177,6 @@ class MainWindow(QMainWindow):
         self.uic.quitbutton.clicked.connect(self.exit)
         self.uic.minbutton.clicked.connect(self.minimize_window)
         self.uic.maxbutton.clicked.connect(self.maximize_window)
-        self.uic.search_button.clicked.connect(self.search_information)
         self.uic.bground.setStyleSheet("background-color: #949084; color: white;")
         self.uic.bground.setText("Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
@@ -191,7 +189,9 @@ class MainWindow(QMainWindow):
         self.uic.bground.mousePressEvent = self.mousePressEvent
         self.clickPosition = QPoint()
         self.setWindowTitle("Hệ thống xử lý vi phạm tốc độ")
-        self.setWindowIcon(QtGui.QIcon("icon/Phu_hieu_canh_sat_giao_thong.png"))
+        iconwindow = QtGui.QIcon()
+        iconwindow.addPixmap(QtGui.QPixmap("icon/Phu_hieu_canh_sat_giao_thong.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.setWindowIcon(iconwindow)
 
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("icon/window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -217,10 +217,6 @@ class MainWindow(QMainWindow):
         icon1.addPixmap(QtGui.QPixmap("icon/54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.maxbutton.setIcon(icon1)
         self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
-        icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap("icon/png-transparent-search-engine-logo-illustration-computer-icons-search-button-miscellaneous-logo-internet-thumbnail.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.search_button.setIcon(icon6)
-        self.uic.search_button.setIconSize(QtCore.QSize(25, 30))
 
 
         
@@ -231,42 +227,9 @@ class MainWindow(QMainWindow):
         self.uic.image_label.setScaledContents(True)
 
         self.uic.device_list.setDisabled(1)
-        self.uic.accept_button.setDisabled(0)
-        self.uic.accept_button.clicked.connect(self.accept_information)
-
+        self.uic.accept_button.setDisabled(1)
         self.uic.deny_button.setDisabled(1)
     
-    def accept_information(self):
-        with open('test.txt', 'r') as file:
-            merge_text = file.read()
-            if "Phong Canh sat" in merge_text:
-                merge_text = merge_text.replace("Phong Canh sat Giao thong", "Phong Canh sat Giao thong\n")
-        # Đọc hình ảnh và thêm khoảng trắng bên phải
-        image = QPixmap("test.jpg")
-        width = image.width()
-        height = image.height()
-        new_width = int(width * 1.5)  # Tăng chiều rộng lên 50%
-        new_image = QPixmap(new_width, height)
-        new_image.fill(Qt.GlobalColor.white)  # Tạo nền trắng mới
-
-        # Vẽ hình ảnh gốc lên hình mới
-        painter = QPainter(new_image)
-        painter.drawPixmap(0, 0, image)
-        painter.end()
-
-        # Chèn văn bản vào phần trắng bên phải
-        painter = QPainter(new_image)
-        painter.setFont(QFont("Arial", 40))
-        painter.drawText(image.width()+30, 0, new_width - image.width(), height, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, merge_text)
-        painter.end()
-
-        # Lưu hình ảnh với text vào file mới
-        save_path = "merge.png"
-        if save_path:
-            new_image.save(save_path)
-            QMessageBox.information(self, "LoginOutput", "Update thanh cong")
-
-
     def MoveWindow(self, event):
         if not self.isMaximized():
             if event.buttons() & Qt.MouseButton.LeftButton:
@@ -408,9 +371,6 @@ class MainWindow(QMainWindow):
         self.thread[1].finished.connect(self.update_device_list_placeholder)
         # Sau khi tìm thấy các thiết bị, cập nhật lại màu của nút thành màu xanh lá cây
         
-    def search_information(self):
-        # searchUiDef.show()
-        searchUiDef.showMaximized()
 
 
 
@@ -460,73 +420,10 @@ class ThreadClass(QtCore.QThread):
         self.connect_status.emit(0)
         self.terminate()
 
-class SearchUI(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.uic = search.Ui_MainWindow()
-        self.uic.setupUi(self)
-        self.uic.quitbuttonsearch.clicked.connect(self.exit)
-        self.uic.minbuttonsearch.clicked.connect(self.minimize_window)
-        self.uic.maxbuttonsearch.clicked.connect(self.maximize_window)
-        self.setWindowTitle("Cơ sở dữ liệu hệ thống")
-        self.setWindowIcon(QtGui.QIcon("icon/Phu_hieu_canh_sat_giao_thong.png"))
-
-
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("icon/window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.minbuttonsearch.setIcon(icon)
-        self.uic.minbuttonsearch.setIconSize(QtCore.QSize(25, 30))
-        icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap("icon/2017609-200.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.quitbuttonsearch.setIcon(icon5)
-        self.uic.quitbuttonsearch.setIconSize(QtCore.QSize(25, 30))
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("icon/54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.maxbuttonsearch.setIcon(icon1)
-        self.uic.maxbuttonsearch.setIconSize(QtCore.QSize(25, 30))
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-        icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap("icon/png-transparent-search-engine-logo-illustration-computer-icons-search-button-miscellaneous-logo-internet-thumbnail.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.bgroundsearchby.setIcon(icon6)
-        self.uic.bgroundsearchby.setIconSize(QtCore.QSize(25, 30))
-
-    def exit(self):
-        # Thực hiện các hành động bạn muốn khi thoát ứng dụng
-        QtWidgets.QApplication.quit()
-
-    def minimize_window(self):
-        # Minimize cửa sổ
-        self.showMinimized()
-
-    def maximize_window(self):
-        # Maximize hoặc phục hồi cửa sổ
-        if self.isMaximized():
-            icon1 = QtGui.QIcon()
-            icon1.addPixmap(QtGui.QPixmap("icon/maximize-icon-512x512-ari7tfdx.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-            self.uic.maxbuttonsearch.setIcon(icon1)
-            self.uic.maxbuttonsearch.setIconSize(QtCore.QSize(25, 30))
-            self.resize(800, 600)
-        else:
-            icon1 = QtGui.QIcon()
-            icon1.addPixmap(QtGui.QPixmap("icon/54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-            self.uic.maxbuttonsearch.setIcon(icon1)
-            self.uic.maxbuttonsearch.setIconSize(QtCore.QSize(25, 30))
-            self.showMaximized()
-
 if __name__ == "__main__":
     import sys
-    app =QApplication(sys.argv)
-    # app = QtWidgets.QApplication(sys.argv)
-    # widget=QtWidgets.QStackedWidget()
+    app = QtWidgets.QApplication(sys.argv)
     w = QtWidgets.QMainWindow()
     ui = MainWindow()
-    # Login_f = MainWindow()
-    searchUiDef = SearchUI()
-
-
-    # widget.addWidget(Login_f) 
-    # widget.addWidget(search) 
-    # widget.setCurrentIndex(0)
-    # widget.show()
-    # searchUiDef.show()
+    ui.show()
     sys.exit(app.exec())

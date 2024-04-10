@@ -26,9 +26,13 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setSpacing(6)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.search_button = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.search_button.setMinimumSize(QtCore.QSize(40, 30))
+        self.search_button.setObjectName("search_button")
+        self.horizontalLayout_3.addWidget(self.search_button)
         self.bground = QtWidgets.QPushButton(parent=self.centralwidget)
         self.bground.setEnabled(False)
-        self.bground.setMinimumSize(QtCore.QSize(40, 10))
+        self.bground.setMinimumSize(QtCore.QSize(40, 30))
         self.bground.setText("")
         self.bground.setObjectName("bground")
         self.horizontalLayout_3.addWidget(self.bground)
@@ -51,10 +55,10 @@ class Ui_MainWindow(object):
         self.quitbutton.setIconSize(QtCore.QSize(30, 30))
         self.quitbutton.setObjectName("quitbutton")
         self.horizontalLayout_3.addWidget(self.quitbutton)
-        self.horizontalLayout_3.setStretch(0, 25)
-        self.horizontalLayout_3.setStretch(1, 2)
+        self.horizontalLayout_3.setStretch(1, 25)
         self.horizontalLayout_3.setStretch(2, 2)
         self.horizontalLayout_3.setStretch(3, 2)
+        self.horizontalLayout_3.setStretch(4, 2)
         self.verticalLayout_2.addLayout(self.horizontalLayout_3)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setSpacing(0)
@@ -121,6 +125,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.search_button.setText(_translate("MainWindow", "Tìm kiếm"))
         self.textEdit.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
