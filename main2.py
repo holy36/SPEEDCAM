@@ -560,13 +560,14 @@ class SearchUI(QMainWindow):
         # Tạo một QDialog để hiển thị pop-up
         dialog = QDialog(self)
         dialog.setWindowTitle("Tìm kiếm theo tốc độ")
-        dialog.resize(300, 50)  # Đặt kích thước cho cửa sổ pop-up
 
         # Thêm một QSpinBox để nhập giá trị tốc độ vào dialog
         speed_spinbox = QSpinBox(dialog)
         speed_spinbox.setMinimum(0)
         speed_spinbox.setMaximum(200)
         speed_spinbox.setValue(60)
+        speed_spinbox.setFixedSize(300, 50)  # Đặt kích thước cho ô nhập tốc độ
+
         # Thêm nút tăng giảm giá trị
 
         # Bố trí các thành phần trong dialog bằng QVBoxLayout
