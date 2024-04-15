@@ -80,7 +80,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,10,0">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,10">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
@@ -357,16 +357,6 @@
             <string>Thiết bị</string>
            </property>
           </column>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCalendarWidget" name="calendarWidget">
-          <property name="maximumSize">
-           <size>
-            <width>0</width>
-            <height>16777215</height>
-           </size>
-          </property>
          </widget>
         </item>
        </layout>

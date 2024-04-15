@@ -1,29 +1,40 @@
-import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QTextEdit
+from PyQt5.QtWidgets import (
+    QDialog, QVBoxLayout, QDateTimeEdit, QDialogButtonBox, QApplication)
+from PyQt5.QtCore import QDateTime, Qt
 
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
 
-        self.setWindowTitle("Kiểm tra nội dung file văn bản")
-        self.setGeometry(100, 100, 600, 400)
+class DateDialog(QDialog):
+    def __init__(self, parent=None):
+        super(DateDialog, self).__init__(parent)
 
-        self.text_edit = QTextEdit()
-        self.setCentralWidget(self.text_edit)
+        layout = QVBoxLayout(self)
 
-        self.check_file_contents()
+        # nice widget for editing the date
+        self.datetime = QDateTimeEdit(self)
+        self.datetime.setCalendarPopup(True)
+        self.datetime.setDateTime(QDateTime.currentDateTime())
+        layout.addWidget(self.datetime)
 
-    def check_file_contents(self):
-        try:
+        # OK and Cancel buttons
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
+            Qt.Horizontal, self)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
 
-        except FileNotFoundError:
-            self.text_edit.setPlainText("Không tìm thấy tệp văn bản 'text.txt'")
+    # get current date and time from the dialog
+    def dateTime(self):
+        return self.datetime.dateTime()
 
-def main():
-    app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec())
-
-if __name__ == '__main__':
-    main()
+    # static method to create the dialog and return (date, time, accepted)
+    @staticmethod
+    def getDateTime(parent=None):
+        dialog = DateDialog(parent)
+        result = dialog.exec_()
+        date = dialog.dateTime()
+        return (date.date(), date.time(), result == QDialog.Accepted)
+    
+app = QApplication([])
+date, time, ok = DateDialog.getDateTime()
+print("{} {} {}".format(date, time, ok))
