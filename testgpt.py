@@ -1,40 +1,50 @@
-from PyQt5.QtWidgets import (
-    QDialog, QVBoxLayout, QDateTimeEdit, QDialogButtonBox, QApplication)
-from PyQt5.QtCore import QDateTime, Qt
+import sys
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem
+import mysql.connector
 
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
 
-class DateDialog(QDialog):
-    def __init__(self, parent=None):
-        super(DateDialog, self).__init__(parent)
+        self.setWindowTitle("Database Table")
+        self.setGeometry(100, 100, 600, 400)
 
-        layout = QVBoxLayout(self)
+        self.tableWidget = QTableWidget()
+        self.setCentralWidget(self.tableWidget)
 
-        # nice widget for editing the date
-        self.datetime = QDateTimeEdit(self)
-        self.datetime.setCalendarPopup(True)
-        self.datetime.setDateTime(QDateTime.currentDateTime())
-        layout.addWidget(self.datetime)
+        self.populateTable()
 
-        # OK and Cancel buttons
-        buttons = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
-            Qt.Horizontal, self)
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
-        layout.addWidget(buttons)
+    def populateTable(self):
+        db = mysql.connector.connect(
+            user='mobeo2002',
+            password='doanquangluu',
+            host='localhost',
+            database='speed_gun'
+        )
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM image")  # Select all columns from your table
+        rows = cursor.fetchall()
 
-    # get current date and time from the dialog
-    def dateTime(self):
-        return self.datetime.dateTime()
+        # Set table size
+        self.tableWidget.setRowCount(len(rows))
+        self.tableWidget.setColumnCount(len(rows[0])+2)  # Assuming all rows have the same number of columns
 
-    # static method to create the dialog and return (date, time, accepted)
-    @staticmethod
-    def getDateTime(parent=None):
-        dialog = DateDialog(parent)
-        result = dialog.exec_()
-        date = dialog.dateTime()
-        return (date.date(), date.time(), result == QDialog.Accepted)
-    
-app = QApplication([])
-date, time, ok = DateDialog.getDateTime()
-print("{} {} {}".format(date, time, ok))
+        # Set table headers
+        headers = [desc[2] for desc in cursor.description]
+        self.tableWidget.setHorizontalHeaderLabels(headers)
+
+        # Populate table with data
+        for i, row in enumerate(rows):
+            for j, value in enumerate(row, start=0):
+                self.tableWidget.setItem(i, j+2, QTableWidgetItem(str(value)))
+
+        db.close()
+
+def main():
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
+
+if __name__ == "__main__":
+    main()

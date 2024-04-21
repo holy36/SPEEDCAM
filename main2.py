@@ -20,8 +20,10 @@ from PyQt6.QtGui import QPixmap, QPainter,QFont
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent, QPoint, QPointF  
 import display,search
 from PyQt6.QtWidgets import (
-    QDateTimeEdit,QSpinBox, QTimeEdit, QDialogButtonBox,QLabel, QPushButton, QCalendarWidget)
+    QDateTimeEdit,QSpinBox, QLineEdit, QTimeEdit, QDialogButtonBox,QLabel, QPushButton, QCalendarWidget)
 from PyQt6.QtCore import QDateTime, Qt
+import mysql.connector
+
 
 
 class PhotoViewer(QtWidgets.QGraphicsView):
@@ -499,6 +501,7 @@ class SearchUI(QMainWindow):
         self.uic.bgroundsearchby.setIcon(icon6)
         self.uic.bgroundsearchby.setIconSize(QtCore.QSize(25, 30))
 
+
     def exit(self):
         # Thực hiện các hành động bạn muốn khi thoát ứng dụng
         self.close()
@@ -523,8 +526,35 @@ class SearchUI(QMainWindow):
             self.showMaximized()
 
     def searchbyname(self):
-        text=QInputDialog.getText(self,'get','ze ze:')
-        self.uic.databasetable.setItem(0, 2, QTableWidgetItem(text[0]))
+        # Tạo một QDialog để hiển thị pop-up
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Tìm kiếm theo tên")
+        dialog.resize(300, 50)  # Đặt kích thước cho cửa sổ pop-up
+
+        # Thêm một QLineEdit để nhập giá trị tên vào dialog
+        name_lineedit = QLineEdit(dialog)
+
+        # Thêm một QPushButton vào dialog
+        btn_ok = QPushButton('OK', dialog)
+
+        # Bố trí các thành phần trong dialog bằng QVBoxLayout
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel("Nhập tên:"))
+        layout.addWidget(name_lineedit)
+        layout.addWidget(btn_ok)
+
+        # Xử lý sự kiện khi nhấn nút "OK"
+        def showName():
+            name_value = name_lineedit.text()
+            self.uic.databasetable.setItem(0, 2, QTableWidgetItem(name_value))
+            dialog.close()
+
+        btn_ok.clicked.connect(showName)
+
+        dialog.setLayout(layout)
+
+        # Hiển thị dialog
+        dialog.exec()
 
     def searchbydate(self):
         dialog = QDialog(self)

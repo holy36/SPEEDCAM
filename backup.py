@@ -15,10 +15,15 @@ from PyQt6.QtCore import QCoreApplication
 import bluetooth
 import sys
 from time import sleep
-from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QMessageBox, QDialog, QInputDialog, QTableWidgetItem
+from PyQt6.QtGui import QPixmap, QPainter,QFont
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent, QPoint, QPointF  
-import display
+import display,search
+from PyQt6.QtWidgets import (
+    QDateTimeEdit,QSpinBox, QLineEdit, QTimeEdit, QDialogButtonBox,QLabel, QPushButton, QCalendarWidget)
+from PyQt6.QtCore import QDateTime, Qt
+import mysql.connector
+
 
 
 class PhotoViewer(QtWidgets.QGraphicsView):
@@ -177,6 +182,7 @@ class MainWindow(QMainWindow):
         self.uic.quitbutton.clicked.connect(self.exit)
         self.uic.minbutton.clicked.connect(self.minimize_window)
         self.uic.maxbutton.clicked.connect(self.maximize_window)
+        self.uic.search_button.clicked.connect(self.search_information)
         self.uic.bground.setStyleSheet("background-color: #949084; color: white;")
         self.uic.bground.setText("Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
@@ -189,9 +195,7 @@ class MainWindow(QMainWindow):
         self.uic.bground.mousePressEvent = self.mousePressEvent
         self.clickPosition = QPoint()
         self.setWindowTitle("Hệ thống xử lý vi phạm tốc độ")
-        iconwindow = QtGui.QIcon()
-        iconwindow.addPixmap(QtGui.QPixmap("icon/Phu_hieu_canh_sat_giao_thong.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.setWindowIcon(iconwindow)
+        self.setWindowIcon(QtGui.QIcon("icon/Phu_hieu_canh_sat_giao_thong.png"))
 
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("icon/window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -217,6 +221,10 @@ class MainWindow(QMainWindow):
         icon1.addPixmap(QtGui.QPixmap("icon/54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.maxbutton.setIcon(icon1)
         self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
+        icon6 = QtGui.QIcon()
+        icon6.addPixmap(QtGui.QPixmap("icon/png-transparent-search-engine-logo-illustration-computer-icons-search-button-miscellaneous-logo-internet-thumbnail.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.uic.search_button.setIcon(icon6)
+        self.uic.search_button.setIconSize(QtCore.QSize(25, 30))
 
 
         
@@ -227,9 +235,42 @@ class MainWindow(QMainWindow):
         self.uic.image_label.setScaledContents(True)
 
         self.uic.device_list.setDisabled(1)
-        self.uic.accept_button.setDisabled(1)
+        self.uic.accept_button.setDisabled(0)
+        self.uic.accept_button.clicked.connect(self.accept_information)
+
         self.uic.deny_button.setDisabled(1)
     
+    def accept_information(self):
+        with open('test.txt', 'r') as file:
+            merge_text = file.read()
+            if "Phong Canh sat" in merge_text:
+                merge_text = merge_text.replace("Phong Canh sat Giao thong", "Phong Canh sat Giao thong\n")
+        # Đọc hình ảnh và thêm khoảng trắng bên phải
+        image = QPixmap("test.jpg")
+        width = image.width()
+        height = image.height()
+        new_width = int(width * 1.5)  # Tăng chiều rộng lên 50%
+        new_image = QPixmap(new_width, height)
+        new_image.fill(Qt.GlobalColor.white)  # Tạo nền trắng mới
+
+        # Vẽ hình ảnh gốc lên hình mới
+        painter = QPainter(new_image)
+        painter.drawPixmap(0, 0, image)
+        painter.end()
+
+        # Chèn văn bản vào phần trắng bên phải
+        painter = QPainter(new_image)
+        painter.setFont(QFont("Arial", 40))
+        painter.drawText(image.width()+30, 0, new_width - image.width(), height, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop, merge_text)
+        painter.end()
+
+        # Lưu hình ảnh với text vào file mới
+        save_path = "merge.png"
+        if save_path:
+            new_image.save(save_path)
+            QMessageBox.information(self, "LoginOutput", "Update thanh cong")
+
+
     def MoveWindow(self, event):
         if not self.isMaximized():
             if event.buttons() & Qt.MouseButton.LeftButton:
@@ -371,6 +412,9 @@ class MainWindow(QMainWindow):
         self.thread[1].finished.connect(self.update_device_list_placeholder)
         # Sau khi tìm thấy các thiết bị, cập nhật lại màu của nút thành màu xanh lá cây
         
+    def search_information(self):
+        # searchUiDef.show()
+        searchUiDef.showMaximized()
 
 
 
@@ -420,10 +464,278 @@ class ThreadClass(QtCore.QThread):
         self.connect_status.emit(0)
         self.terminate()
 
+class SearchUI(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.uic = search.Ui_MainWindow()
+        self.uic.setupUi(self)
+        self.uic.quitbuttonsearch.clicked.connect(self.exit)
+        self.uic.minbuttonsearch.clicked.connect(self.minimize_window)
+        self.uic.maxbuttonsearch.clicked.connect(self.maximize_window)
+        self.setWindowTitle("Cơ sở dữ liệu hệ thống")
+        self.setWindowIcon(QtGui.QIcon("icon/Phu_hieu_canh_sat_giao_thong.png"))
+
+        self.uic.byname.clicked.connect(self.searchbyname)
+        self.uic.bydate.clicked.connect(self.searchbydate)
+        self.uic.bydevice.clicked.connect(self.searchbydevice)
+        self.uic.bylocation.clicked.connect(self.searchbylocation)
+        self.uic.byplate.clicked.connect(self.searchbyplate)
+        self.uic.byspeed.clicked.connect(self.searchbyspeed)
+        self.uic.byvehicle.clicked.connect(self.searchbyvehicle)
+        self.uic.byid.clicked.connect(self.searchbyid)
+        self.uic.showall.clicked.connect(self.showalldatabase)
+
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("icon/window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.uic.minbuttonsearch.setIcon(icon)
+        self.uic.minbuttonsearch.setIconSize(QtCore.QSize(25, 30))
+        icon5 = QtGui.QIcon()
+        icon5.addPixmap(QtGui.QPixmap("icon/2017609-200.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.uic.quitbuttonsearch.setIcon(icon5)
+        self.uic.quitbuttonsearch.setIconSize(QtCore.QSize(25, 30))
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap("icon/54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.uic.maxbuttonsearch.setIcon(icon1)
+        self.uic.maxbuttonsearch.setIconSize(QtCore.QSize(25, 30))
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        icon6 = QtGui.QIcon()
+        icon6.addPixmap(QtGui.QPixmap("icon/png-transparent-search-engine-logo-illustration-computer-icons-search-button-miscellaneous-logo-internet-thumbnail.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.uic.bgroundsearchby.setIcon(icon6)
+        self.uic.bgroundsearchby.setIconSize(QtCore.QSize(25, 30))
+        icon7 = QtGui.QIcon()
+        icon7.addPixmap(QtGui.QPixmap("icon/png-transparent-database-scalable-graphics-icon-database-icons-text-rectangle-monochrome.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.uic.showall.setIcon(icon7)
+        self.uic.showall.setIconSize(QtCore.QSize(30, 35))
+        self.uic.showall.setText("Hiển thị toàn bộ")
+        self.showalldatabase()
+
+
+
+    def getImageLabel(self,image):
+        imageLabel = QtWidgets.QLabel()
+        imageLabel.setText("")
+        imageLabel.setScaledContents(True)
+        pixmap = QtGui.QPixmap()
+        pixmap.loadFromData(image, 'jpg')
+        imageLabel.setPixmap(pixmap)
+        return imageLabel
+    
+    def showalldatabase(self):
+        self.uic.databasetable.clearContents()
+        db = mysql.connector.connect(
+            user='mobeo2002',
+            password='doanquangluu',
+            host='localhost',
+            database='speed_gun'
+        )
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM image")  # Select all columns from your table
+        rows = cursor.fetchall()
+        db.close()
+        self.uic.databasetable.setRowCount(len(rows))
+        self.uic.databasetable.setStyleSheet("QTableWidget::item { border-bottom: 74px}")
+        for i, row in enumerate(rows):
+            for j, value in enumerate(row):
+                if(j==1):
+                    item=self.getImageLabel(value)
+                    self.uic.databasetable.setCellWidget(i,j,item)
+                else:
+                    self.uic.databasetable.setItem(i, j, QTableWidgetItem(str(value)))
+
+    def exit(self):
+        # Thực hiện các hành động bạn muốn khi thoát ứng dụng
+        self.close()
+
+    def minimize_window(self):
+        # Minimize cửa sổ
+        self.showMinimized()
+
+    def maximize_window(self):
+        # Maximize hoặc phục hồi cửa sổ
+        if self.isMaximized():
+            icon1 = QtGui.QIcon()
+            icon1.addPixmap(QtGui.QPixmap("icon/maximize-icon-512x512-ari7tfdx.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+            self.uic.maxbuttonsearch.setIcon(icon1)
+            self.uic.maxbuttonsearch.setIconSize(QtCore.QSize(25, 30))
+            self.resize(800, 600)
+        else:
+            icon1 = QtGui.QIcon()
+            icon1.addPixmap(QtGui.QPixmap("icon/54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+            self.uic.maxbuttonsearch.setIcon(icon1)
+            self.uic.maxbuttonsearch.setIconSize(QtCore.QSize(25, 30))
+            self.showMaximized()
+
+    def dialog_config(self, dialog, dialog_text, callback_function):
+        dialog.setWindowTitle(dialog_text)
+        dialog.resize(300, 50)  # Đặt kích thước cho cửa sổ pop-up
+
+        # Thêm một QLineEdit để nhập giá trị tên vào dialog
+        line_edit = QLineEdit(dialog)
+
+        # Thêm một QPushButton vào dialog
+        btn_ok = QPushButton('OK', dialog)
+
+        # Bố trí các thành phần trong dialog bằng QVBoxLayout
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel(dialog_text))
+        layout.addWidget(line_edit)
+        layout.addWidget(btn_ok)
+
+        # Xử lý sự kiện khi nhấn nút "OK"
+        def showValue():
+            value = line_edit.text()
+            callback_function(value)
+            dialog.close()
+
+        btn_ok.clicked.connect(showValue)
+
+        dialog.setLayout(layout)
+
+    def searchbyname(self):
+        # Tạo một QDialog để hiển thị pop-up
+        dialog = QDialog(self)
+        def callback_function(name_value):
+            self.databaseshow_partial_column('name', name_value)
+        self.dialog_config(dialog, "Tìm kiếm theo tên", callback_function)
+        # Hiển thị dialog
+        dialog.exec()
+
+
+    def searchbydate(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Chọn ngày tháng")
+        dialog.resize(800, 500)
+        calendar = QCalendarWidget(dialog)
+        btn_ok = QPushButton('OK', dialog)
+        layout = QVBoxLayout()
+        layout.addWidget(calendar)
+        layout.addWidget(btn_ok)
+        dialog.setLayout(layout)
+        def showSelectedDate():
+            selected_date = calendar.selectedDate().toString('yyyy-MM-dd')
+            self.databaseshow_partial_column('date', selected_date)
+            dialog.close()
+
+        btn_ok.clicked.connect(showSelectedDate)
+        dialog.exec()
+
+    def searchbyplate(self):
+        # Tạo một QDialog để hiển thị pop-up
+        dialog = QDialog(self)
+        def callback_function(plate_value):
+            self.databaseshow_partial_column('plate', plate_value)
+        self.dialog_config(dialog, "Tìm kiếm theo tên", callback_function)
+        # Hiển thị dialog
+        dialog.exec()
+
+    def searchbydevice(self):
+        text=QInputDialog.getText(self,'get','ze ze:')
+        self.uic.databasetable.setItem(0, 2, QTableWidgetItem(text[0]))
+
+    def searchbylocation(self):
+        # Tạo một QDialog để hiển thị pop-up
+        dialog = QDialog(self)
+        def callback_function(location_value):
+            self.databaseshow_partial_column('location', location_value)
+        self.dialog_config(dialog, "Tìm kiếm theo vị trí", callback_function)
+        # Hiển thị dialog
+        dialog.exec()
+
+    def searchbyspeed(self):
+        # Tạo một QDialog để hiển thị pop-up
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Tìm kiếm theo tốc độ")
+        # Thêm một QSpinBox để nhập giá trị tốc độ vào dialog
+        speed_spinbox = QSpinBox(dialog)
+        speed_spinbox.setMinimum(0)
+        speed_spinbox.setMaximum(200)
+        speed_spinbox.setValue(60)
+        speed_spinbox.setFixedSize(300, 50)  # Đặt kích thước cho ô nhập tốc độ
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel("Nhập tốc độ:"))
+        layout.addWidget(speed_spinbox)
+        btn_ok = QPushButton('OK', dialog)
+        layout.addWidget(btn_ok)
+        def showSpeed():
+            speed_value = speed_spinbox.value()
+            self.databaseshow_partial_column('speed', speed_value)
+            dialog.close()
+        btn_ok.clicked.connect(showSpeed)
+        dialog.setLayout(layout)
+        dialog.exec()
+
+    def searchbyid(self):
+        # Tạo một QDialog để hiển thị pop-up
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Tìm kiếm theo ID")
+        # Thêm một QSpinBox để nhập giá trị tốc độ vào dialog
+        speed_spinbox = QSpinBox(dialog)
+        speed_spinbox.setMinimum(0)
+        speed_spinbox.setValue(0)
+        speed_spinbox.setFixedSize(300, 50)  # Đặt kích thước cho ô nhập tốc độ
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel("Nhập ID:"))
+        layout.addWidget(speed_spinbox)
+        btn_ok = QPushButton('OK', dialog)
+        layout.addWidget(btn_ok)
+        def showId():
+            id_value = speed_spinbox.value()
+            self.databaseshow_partial_column('id', id_value)
+            dialog.close()
+        btn_ok.clicked.connect(showId)
+        dialog.setLayout(layout)
+        dialog.exec()
+
+    def searchbyvehicle(self):
+        text=QInputDialog.getText(self,'get','ze ze:')
+        self.uic.databasetable.setItem(0, 2, QTableWidgetItem(text[0]))
+
+    def databaseshow_partial_column(self, column_name, show_value):            
+        db = mysql.connector.connect(
+            user='mobeo2002',
+            password='doanquangluu',
+            host='localhost',
+            database='speed_gun'
+        )
+        cursor = db.cursor()
+
+        # Xác định kiểu dữ liệu của biến show_value
+        if isinstance(show_value, str):  # Nếu show_value là một chuỗi
+            query = f"SELECT * FROM image WHERE {column_name} LIKE %s"
+            cursor.execute(query, ("%" + show_value + "%",))
+        else:  # Nếu show_value là một số nguyên
+            query = f"SELECT * FROM image WHERE {column_name} = %s"
+            cursor.execute(query, (show_value,))
+
+        rows = cursor.fetchall()
+        db.close()
+
+        # Cập nhật table widget với các dòng được trả về từ cơ sở dữ liệu
+        self.uic.databasetable.setRowCount(len(rows))
+        for i, row in enumerate(rows):
+            for j, value in enumerate(row):
+                if j == 1:  # Nếu đây là cột hình ảnh
+                    item = self.getImageLabel(value)
+                    self.uic.databasetable.setCellWidget(i, j, item)
+                else:
+                    self.uic.databasetable.setItem(i, j, QTableWidgetItem(str(value)))
+        return show_value
+
+
 if __name__ == "__main__":
     import sys
-    app = QtWidgets.QApplication(sys.argv)
+    app =QApplication(sys.argv)
+    # app = QtWidgets.QApplication(sys.argv)
+    # widget=QtWidgets.QStackedWidget()
     w = QtWidgets.QMainWindow()
     ui = MainWindow()
-    ui.show()
+    # Login_f = MainWindow()
+    searchUiDef = SearchUI()
+
+
+    # widget.addWidget(Login_f) 
+    # widget.addWidget(search) 
+    # widget.setCurrentIndex(0)
+    # widget.show()
+    # searchUiDef.show()
     sys.exit(app.exec())

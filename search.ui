@@ -21,7 +21,20 @@
        <number>0</number>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="25,2,2,2">
+       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,25,2,2,2">
+        <item>
+         <widget class="QPushButton" name="showall">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
         <item>
          <widget class="QPushButton" name="bgroundsearch">
           <property name="enabled">
@@ -101,6 +114,32 @@
             </property>
             <property name="text">
              <string>Tìm kiếm theo: </string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="byid">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>40</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Theo ID</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="bystatus">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>40</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Theo trạng thái</string>
             </property>
            </widget>
           </item>
@@ -314,12 +353,17 @@
           </row>
           <column>
            <property name="text">
-            <string>STT</string>
+            <string>ID</string>
            </property>
           </column>
           <column>
            <property name="text">
             <string>Hình ảnh</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Trạng thái</string>
            </property>
           </column>
           <column>
