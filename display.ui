@@ -39,7 +39,7 @@
     <item row="2" column="3">
      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,18,1">
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,25,2,2,2">
+       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0,25,2,2,2">
         <property name="spacing">
          <number>6</number>
         </property>
@@ -53,6 +53,19 @@
           </property>
           <property name="text">
            <string>Tìm kiếm</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="connect_with_mac">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
           </property>
          </widget>
         </item>
