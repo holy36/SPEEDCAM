@@ -482,6 +482,9 @@ class SearchUI(QMainWindow):
         self.uic.byplate.clicked.connect(self.searchbyplate)
         self.uic.byspeed.clicked.connect(self.searchbyspeed)
         self.uic.byvehicle.clicked.connect(self.searchbyvehicle)
+        self.uic.byid.clicked.connect(self.searchbyid)
+        self.uic.showall.clicked.connect(self.showalldatabase)
+        self.uic.bystatus.clicked.connect(self.searchbystatus)
 
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("icon/window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -500,7 +503,50 @@ class SearchUI(QMainWindow):
         icon6.addPixmap(QtGui.QPixmap("icon/png-transparent-search-engine-logo-illustration-computer-icons-search-button-miscellaneous-logo-internet-thumbnail.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.bgroundsearchby.setIcon(icon6)
         self.uic.bgroundsearchby.setIconSize(QtCore.QSize(25, 30))
+        icon7 = QtGui.QIcon()
+        icon7.addPixmap(QtGui.QPixmap("icon/png-transparent-database-scalable-graphics-icon-database-icons-text-rectangle-monochrome.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.uic.showall.setIcon(icon7)
+        self.uic.showall.setIconSize(QtCore.QSize(30, 35))
+        self.uic.showall.setText("Hiển thị toàn bộ")
+        self.showalldatabase()
 
+
+
+    def getImageLabel(self,image):
+        imageLabel = QtWidgets.QLabel()
+        imageLabel.setText("")
+        imageLabel.setScaledContents(True)
+        pixmap = QtGui.QPixmap()
+        pixmap.loadFromData(image, 'jpg')
+        imageLabel.setPixmap(pixmap)
+        return imageLabel
+    
+    def showalldatabase(self):
+        self.uic.databasetable.clearContents()
+        db = mysql.connector.connect(
+            user='mobeo2002',
+            password='doanquangluu',
+            host='localhost',
+            database='speed_gun'
+        )
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM image")  # Select all columns from your table
+        rows = cursor.fetchall()
+        db.close()
+        self.uic.databasetable.setRowCount(len(rows))
+        self.uic.databasetable.setStyleSheet("QTableWidget::item { border-bottom: 74px}")
+        for i, row in enumerate(rows):
+            for j, value in enumerate(row):
+                if(j==1):
+                    item=self.getImageLabel(value)
+                    self.uic.databasetable.setCellWidget(i,j,item)
+                elif j == 2:
+                    if value == 0:
+                        self.uic.databasetable.setItem(i, j, QTableWidgetItem("Từ chối"))
+                    else:
+                        self.uic.databasetable.setItem(i, j, QTableWidgetItem("Đồng ý"))
+                else:
+                    self.uic.databasetable.setItem(i, j, QTableWidgetItem(str(value)))
 
     def exit(self):
         # Thực hiện các hành động bạn muốn khi thoát ứng dụng
@@ -525,36 +571,41 @@ class SearchUI(QMainWindow):
             self.uic.maxbuttonsearch.setIconSize(QtCore.QSize(25, 30))
             self.showMaximized()
 
-    def searchbyname(self):
-        # Tạo một QDialog để hiển thị pop-up
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Tìm kiếm theo tên")
+    def dialog_config(self, dialog, dialog_text, callback_function):
+        dialog.setWindowTitle(dialog_text)
         dialog.resize(300, 50)  # Đặt kích thước cho cửa sổ pop-up
 
         # Thêm một QLineEdit để nhập giá trị tên vào dialog
-        name_lineedit = QLineEdit(dialog)
+        line_edit = QLineEdit(dialog)
 
         # Thêm một QPushButton vào dialog
         btn_ok = QPushButton('OK', dialog)
 
         # Bố trí các thành phần trong dialog bằng QVBoxLayout
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("Nhập tên:"))
-        layout.addWidget(name_lineedit)
+        layout.addWidget(QLabel(dialog_text))
+        layout.addWidget(line_edit)
         layout.addWidget(btn_ok)
 
         # Xử lý sự kiện khi nhấn nút "OK"
-        def showName():
-            name_value = name_lineedit.text()
-            self.uic.databasetable.setItem(0, 2, QTableWidgetItem(name_value))
+        def showValue():
+            value = line_edit.text()
+            callback_function(value)
             dialog.close()
 
-        btn_ok.clicked.connect(showName)
+        btn_ok.clicked.connect(showValue)
 
         dialog.setLayout(layout)
 
+    def searchbyname(self):
+        # Tạo một QDialog để hiển thị pop-up
+        dialog = QDialog(self)
+        def callback_function(name_value):
+            self.databaseshow_partial_column('name', name_value)
+        self.dialog_config(dialog, "Tìm kiếm theo tên", callback_function)
         # Hiển thị dialog
         dialog.exec()
+
 
     def searchbydate(self):
         dialog = QDialog(self)
@@ -568,63 +619,145 @@ class SearchUI(QMainWindow):
         dialog.setLayout(layout)
         def showSelectedDate():
             selected_date = calendar.selectedDate().toString('yyyy-MM-dd')
-            self.uic.databasetable.setItem(0, 6, QTableWidgetItem(selected_date))
+            self.databaseshow_partial_column('date', selected_date)
             dialog.close()
 
         btn_ok.clicked.connect(showSelectedDate)
         dialog.exec()
 
     def searchbyplate(self):
-        text=QInputDialog.getText(self,'get','ze ze:')
-        self.uic.databasetable.setItem(0, 2, QTableWidgetItem(text[0]))
+        # Tạo một QDialog để hiển thị pop-up
+        dialog = QDialog(self)
+        def callback_function(plate_value):
+            self.databaseshow_partial_column('plate', plate_value)
+        self.dialog_config(dialog, "Tìm kiếm theo tên", callback_function)
+        # Hiển thị dialog
+        dialog.exec()
 
     def searchbydevice(self):
         text=QInputDialog.getText(self,'get','ze ze:')
         self.uic.databasetable.setItem(0, 2, QTableWidgetItem(text[0]))
 
     def searchbylocation(self):
-        text=QInputDialog.getText(self,'get','ze ze:')
-        self.uic.databasetable.setItem(0, 2, QTableWidgetItem(text[0]))
+        # Tạo một QDialog để hiển thị pop-up
+        dialog = QDialog(self)
+        def callback_function(location_value):
+            self.databaseshow_partial_column('location', location_value)
+        self.dialog_config(dialog, "Tìm kiếm theo vị trí", callback_function)
+        # Hiển thị dialog
+        dialog.exec()
 
     def searchbyspeed(self):
         # Tạo một QDialog để hiển thị pop-up
         dialog = QDialog(self)
         dialog.setWindowTitle("Tìm kiếm theo tốc độ")
-
         # Thêm một QSpinBox để nhập giá trị tốc độ vào dialog
         speed_spinbox = QSpinBox(dialog)
         speed_spinbox.setMinimum(0)
         speed_spinbox.setMaximum(200)
         speed_spinbox.setValue(60)
         speed_spinbox.setFixedSize(300, 50)  # Đặt kích thước cho ô nhập tốc độ
-
-        # Thêm nút tăng giảm giá trị
-
-        # Bố trí các thành phần trong dialog bằng QVBoxLayout
         layout = QVBoxLayout()
         layout.addWidget(QLabel("Nhập tốc độ:"))
         layout.addWidget(speed_spinbox)
-
-        # Thêm nút OK để xác nhận và đóng dialog
         btn_ok = QPushButton('OK', dialog)
         layout.addWidget(btn_ok)
-
-        # Xử lý sự kiện khi nhấn nút "OK"
         def showSpeed():
             speed_value = speed_spinbox.value()
-            self.uic.databasetable.setItem(0, 5,QTableWidgetItem(str(speed_value)))
+            self.databaseshow_partial_column('speed', speed_value)
             dialog.close()
-
         btn_ok.clicked.connect(showSpeed)
-
         dialog.setLayout(layout)
+        dialog.exec()
 
+    def searchbyid(self):
+        # Tạo một QDialog để hiển thị pop-up
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Tìm kiếm theo ID")
+        # Thêm một QSpinBox để nhập giá trị tốc độ vào dialog
+        speed_spinbox = QSpinBox(dialog)
+        speed_spinbox.setMinimum(0)
+        speed_spinbox.setValue(0)
+        speed_spinbox.setFixedSize(300, 50)  # Đặt kích thước cho ô nhập tốc độ
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel("Nhập ID:"))
+        layout.addWidget(speed_spinbox)
+        btn_ok = QPushButton('OK', dialog)
+        layout.addWidget(btn_ok)
+        def showId():
+            id_value = speed_spinbox.value()
+            self.databaseshow_partial_column('id', id_value)
+            dialog.close()
+        btn_ok.clicked.connect(showId)
+        dialog.setLayout(layout)
+        dialog.exec()
+
+    def searchbystatus(self):
+        # Tạo một QDialog để chọn trạng thái
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Chọn trạng thái")
+        dialog.resize(300, 50)  # Đặt kích cỡ dialog là 300x300
+        layout = QVBoxLayout()
+        # Tạo nút "Đồng ý"
+        btn_agree = QPushButton("Đồng ý", dialog)
+        layout.addWidget(btn_agree)
+        # Tạo nút "Từ chối"
+        btn_decline = QPushButton("Từ chối", dialog)
+        layout.addWidget(btn_decline)
+        # Xử lý sự kiện khi nhấn nút "Đồng ý"
+        def showAcceptedStatus():
+            dialog.close()
+            self.databaseshow_partial_column('status', 1)
+        btn_agree.clicked.connect(showAcceptedStatus)
+        # Xử lý sự kiện khi nhấn nút "Từ chối"
+        def showDeclinedStatus():
+            dialog.close()
+            self.databaseshow_partial_column('status', 0)
+        btn_decline.clicked.connect(showDeclinedStatus)
+        dialog.setLayout(layout)
         # Hiển thị dialog
         dialog.exec()
 
     def searchbyvehicle(self):
         text=QInputDialog.getText(self,'get','ze ze:')
         self.uic.databasetable.setItem(0, 2, QTableWidgetItem(text[0]))
+
+    def databaseshow_partial_column(self, column_name, show_value):            
+        db = mysql.connector.connect(
+            user='mobeo2002',
+            password='doanquangluu',
+            host='localhost',
+            database='speed_gun'
+        )
+        cursor = db.cursor()
+
+        # Xác định kiểu dữ liệu của biến show_value
+        if isinstance(show_value, str):  # Nếu show_value là một chuỗi
+            query = f"SELECT * FROM image WHERE {column_name} LIKE %s"
+            cursor.execute(query, ("%" + show_value + "%",))
+        else:  # Nếu show_value là một số nguyên
+            query = f"SELECT * FROM image WHERE {column_name} = %s"
+            cursor.execute(query, (show_value,))
+
+        rows = cursor.fetchall()
+        db.close()
+
+        # Cập nhật table widget với các dòng được trả về từ cơ sở dữ liệu
+        self.uic.databasetable.setRowCount(len(rows))
+        for i, row in enumerate(rows):
+            for j, value in enumerate(row):
+                if j == 1:  # Nếu đây là cột hình ảnh
+                    item = self.getImageLabel(value)
+                    self.uic.databasetable.setCellWidget(i, j, item)
+                elif j == 2:
+                    if value == 0:
+                        self.uic.databasetable.setItem(i, j, QTableWidgetItem("Từ chối"))
+                    else:
+                        self.uic.databasetable.setItem(i, j, QTableWidgetItem("Đồng ý"))
+                else:
+                    self.uic.databasetable.setItem(i, j, QTableWidgetItem(str(value)))
+        return show_value
+
 
 if __name__ == "__main__":
     import sys

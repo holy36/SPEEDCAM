@@ -716,6 +716,7 @@ class SearchUI(QMainWindow):
             for j, value in enumerate(row):
                 if j == 1:  # Nếu đây là cột hình ảnh
                     item = self.getImageLabel(value)
+                    print(value)
                     self.uic.databasetable.setCellWidget(i, j, item)
                 else:
                     self.uic.databasetable.setItem(i, j, QTableWidgetItem(str(value)))

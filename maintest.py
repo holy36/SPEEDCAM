@@ -484,6 +484,7 @@ class SearchUI(QMainWindow):
         self.uic.byvehicle.clicked.connect(self.searchbyvehicle)
         self.uic.byid.clicked.connect(self.searchbyid)
         self.uic.showall.clicked.connect(self.showalldatabase)
+        self.uic.bystatus.clicked.connect(self.searchbystatus)
 
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("icon/window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -539,6 +540,11 @@ class SearchUI(QMainWindow):
                 if(j==1):
                     item=self.getImageLabel(value)
                     self.uic.databasetable.setCellWidget(i,j,item)
+                elif j == 2:
+                    if value == 0:
+                        self.uic.databasetable.setItem(i, j, QTableWidgetItem("Từ chối"))
+                    else:
+                        self.uic.databasetable.setItem(i, j, QTableWidgetItem("Đồng ý"))
                 else:
                     self.uic.databasetable.setItem(i, j, QTableWidgetItem(str(value)))
 
@@ -686,6 +692,32 @@ class SearchUI(QMainWindow):
         dialog.setLayout(layout)
         dialog.exec()
 
+    def searchbystatus(self):
+        # Tạo một QDialog để chọn trạng thái
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Chọn trạng thái")
+        dialog.resize(300, 50)  # Đặt kích cỡ dialog là 300x300
+        layout = QVBoxLayout()
+        # Tạo nút "Đồng ý"
+        btn_agree = QPushButton("Đồng ý", dialog)
+        layout.addWidget(btn_agree)
+        # Tạo nút "Từ chối"
+        btn_decline = QPushButton("Từ chối", dialog)
+        layout.addWidget(btn_decline)
+        # Xử lý sự kiện khi nhấn nút "Đồng ý"
+        def showAcceptedStatus():
+            dialog.close()
+            self.databaseshow_partial_column('status', 1)
+        btn_agree.clicked.connect(showAcceptedStatus)
+        # Xử lý sự kiện khi nhấn nút "Từ chối"
+        def showDeclinedStatus():
+            dialog.close()
+            self.databaseshow_partial_column('status', 0)
+        btn_decline.clicked.connect(showDeclinedStatus)
+        dialog.setLayout(layout)
+        # Hiển thị dialog
+        dialog.exec()
+
     def searchbyvehicle(self):
         text=QInputDialog.getText(self,'get','ze ze:')
         self.uic.databasetable.setItem(0, 2, QTableWidgetItem(text[0]))
@@ -717,6 +749,11 @@ class SearchUI(QMainWindow):
                 if j == 1:  # Nếu đây là cột hình ảnh
                     item = self.getImageLabel(value)
                     self.uic.databasetable.setCellWidget(i, j, item)
+                elif j == 2:
+                    if value == 0:
+                        self.uic.databasetable.setItem(i, j, QTableWidgetItem("Từ chối"))
+                    else:
+                        self.uic.databasetable.setItem(i, j, QTableWidgetItem("Đồng ý"))
                 else:
                     self.uic.databasetable.setItem(i, j, QTableWidgetItem(str(value)))
         return show_value
