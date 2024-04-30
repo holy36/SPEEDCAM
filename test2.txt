@@ -1,0 +1,12 @@
+Tên: Đoàn Văn Hoàn
+Loại phương tiện: Đi bộ
+Biển kiểm soát: 51B-050196
+Tốc độ vi phạm: 41km/h
+Tốc độ quy định: 50km/h
+Thời điểm ghi nhận: 17/11/2023 R:35
+Vị trí ghi nhận: Vĩ độ 11,49
+	      Kinh độ 109,46
+	      Vị trí Km480-900
+	      QL1A-Hà Tĩnh
+Thiết bị: 05050 Kiểm định đến 10_2020
+Đơn vị vân hành: Phòng Cảnh sát Giao thông Công an tỉnh Hà Nội

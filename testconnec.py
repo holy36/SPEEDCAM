@@ -375,7 +375,7 @@ class MainWindow(QMainWindow):
         self.thread[2].signal.connect(self.my_function)
         self.thread[2].connect_status.connect(self.status_change)
     def my_function(self, msg):
-        i = self.uic.MainWindow.sender().index
+        # i = self.uic.MainWindow.sender().index
         self.uic.image_label.setText(msg)
 
     def cancel_connection(self):
