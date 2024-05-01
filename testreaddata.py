@@ -12,6 +12,8 @@ import mysql.connector
 from testnew import Ui_MainWindow  # Thay thế "testnew_ui" bằng tên đúng của file ui đã chuyển đổi
 import re
 import datetime
+import shutil
+import os
 
 # Tạo ứng dụng PyQt6
 app = QApplication(sys.argv)
@@ -116,10 +118,53 @@ def on_clear_button_clicked():
     )
 
     cursor = db.cursor()  # Tạo cursor
-    insert_query = "INSERT INTO image (image, name, status, vehicle, plate, speed, date, location, device) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
-    data = (image_data, name, status, vehicle, plate, speed, date_obj, location, device)  # Dùng date_obj
+    insert_query = "INSERT INTO image (name, status, vehicle, plate, speed, date, location, device) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    data = ( name, status, vehicle, plate, speed, date_obj, location, device)  # Dùng date_obj
 
-    cursor.execute(insert_query, data)  # Thực hiện truy vấn
+    cursor.execute(insert_query, data)
+    select_query = """
+    SELECT id 
+    FROM image
+    WHERE 
+        name = %s AND 
+        status = %s AND 
+        vehicle = %s AND 
+        plate = %s AND 
+        speed = %s AND 
+        date = %s AND 
+        location = %s AND 
+        device = %s
+    """
+    data = ( name, status, vehicle, plate, speed, date_obj, location, device)
+    cursor.execute(select_query, data)
+
+    # Lấy kết quả
+    result = cursor.fetchone()
+    # Sao chép và đổi tên hình ảnh
+    current_folder = os.path.dirname(__file__)
+
+# Tạo đường dẫn đến thư mục "database"
+    database_folder = os.path.join(current_folder, "database")
+
+    # Đảm bảo thư mục "database" tồn tại, nếu không thì tạo nó
+    if not os.path.exists(database_folder):
+        os.makedirs(database_folder)
+
+    # Đường dẫn đến tệp gốc
+    source_image = "test.jpg"
+
+    # Tên tệp mới (dựa trên giá trị kết quả)
+    destination_image = f"{result[0]}.jpg"
+
+    # Đường dẫn đầy đủ đến thư mục "database" để sao chép tệp
+    destination_path = os.path.join(database_folder, destination_image)
+
+    # Sao chép tệp vào thư mục "database"
+    shutil.copy(source_image, destination_path)
+
+    # Cập nhật cột `image` với tên tệp mới
+    update_query = "UPDATE image SET image = %s WHERE id = %s"
+    cursor.execute(update_query, (destination_path, result[0]))  # Chỉ lấy giá trị đầu tiên từ tuple
     db.commit()  # Xác nhận thay đổi
 
     # Xóa nội dung trong textEdit sau khi chèn
