@@ -185,6 +185,8 @@ class MainWindow(QMainWindow):
         self.uic.search_button.clicked.connect(self.search_information)
         self.uic.bground.setStyleSheet("background-color: #949084; color: white;")
         self.uic.bground.setText("Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab")
+        self.uic.connect_with_mac.setText("Kết nối tới địa chỉ")
+        self.uic.connect_with_mac.clicked.connect(self.connect_with_address)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.showMaximized()
@@ -225,6 +227,10 @@ class MainWindow(QMainWindow):
         icon6.addPixmap(QtGui.QPixmap("icon/png-transparent-search-engine-logo-illustration-computer-icons-search-button-miscellaneous-logo-internet-thumbnail.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.search_button.setIcon(icon6)
         self.uic.search_button.setIconSize(QtCore.QSize(25, 30))
+        icon7 = QtGui.QIcon()
+        icon7.addPixmap(QtGui.QPixmap("icon/3681148-200.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.uic.connect_with_mac.setIcon(icon7)
+        self.uic.connect_with_mac.setIconSize(QtCore.QSize(25, 30))
 
 
         
@@ -239,7 +245,46 @@ class MainWindow(QMainWindow):
         self.uic.accept_button.clicked.connect(self.accept_information)
 
         self.uic.deny_button.setDisabled(1)
-    
+
+    def dialog_config(self, dialog, dialog_text, callback_function):
+        dialog.setWindowTitle(dialog_text)
+        dialog.resize(300, 50)  # Đặt kích thước cho cửa sổ pop-up
+
+        # Thêm một QLineEdit để nhập giá trị tên vào dialog
+        line_edit = QLineEdit(dialog)
+
+        # Thêm một QPushButton vào dialog
+        btn_ok = QPushButton('OK', dialog)
+
+        # Bố trí các thành phần trong dialog bằng QVBoxLayout
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel(dialog_text))
+        layout.addWidget(line_edit)
+        layout.addWidget(btn_ok)
+
+        # Xử lý sự kiện khi nhấn nút "OK"
+        def showValue():
+            value = line_edit.text()
+            callback_function(value)
+            dialog.close()
+
+        btn_ok.clicked.connect(showValue)
+
+        dialog.setLayout(layout)
+
+    def connect_with_address(self):
+        # Tạo một QDialog để hiển thị pop-up
+        dialog = QDialog(self)
+        def callback_function(device_address):
+            self.thread[2] = ThreadClass(index=1,mac_id=device_address)
+            self.thread[2].start()
+            self.thread[2].signal.connect(self.my_function)
+            self.thread[2].connect_status.connect(self.status_change)
+
+        self.dialog_config(dialog, "Nhập địa chỉ thiết bị bạn muốn kết nối", callback_function)
+        # Hiển thị dialog
+        dialog.exec()
+        
     def accept_information(self):
         with open('test.txt', 'r') as file:
             merge_text = file.read()
@@ -635,8 +680,30 @@ class SearchUI(QMainWindow):
         dialog.exec()
 
     def searchbydevice(self):
-        text=QInputDialog.getText(self,'get','ze ze:')
-        self.uic.databasetable.setItem(0, 2, QTableWidgetItem(text[0]))
+        # Kết nối tới cơ sở dữ liệu và truy vấn các giá trị độc nhất trong cột 'device'
+        db = mysql.connector.connect(
+            user='mobeo2002',
+            password='doanquangluu',
+            host='localhost',
+            database='speed_gun'
+        )
+        cursor = db.cursor()
+        cursor.execute("SELECT DISTINCT device FROM image")
+        distinct_devices = [row[0] for row in cursor.fetchall()]
+        db.close()
+
+        # Hiển thị pop-up để chọn 'device'
+        item, ok = QInputDialog.getItem(
+            self,
+            "Tìm kiếm theo thiết bị",
+            "Chọn thiết bị:",
+            distinct_devices,
+            0,
+            False
+        )
+        
+        if ok and item:
+            self.databaseshow_partial_column("device", item)  # Cập nhật table widget dựa trên thiết bị đã chọn
 
     def searchbylocation(self):
         # Tạo một QDialog để hiển thị pop-up
@@ -657,6 +724,16 @@ class SearchUI(QMainWindow):
         speed_spinbox.setMaximum(200)
         speed_spinbox.setValue(60)
         speed_spinbox.setFixedSize(300, 50)  # Đặt kích thước cho ô nhập tốc độ
+        speed_spinbox.setStyleSheet("""
+        QSpinBox::up-button {
+            width: 30px;
+            height: 30px;
+        }
+        QSpinBox::down-button {
+            width: 30px;
+            height: 30px;
+        }
+        """)
         layout = QVBoxLayout()
         layout.addWidget(QLabel("Nhập tốc độ:"))
         layout.addWidget(speed_spinbox)
@@ -719,8 +796,46 @@ class SearchUI(QMainWindow):
         dialog.exec()
 
     def searchbyvehicle(self):
-        text=QInputDialog.getText(self,'get','ze ze:')
-        self.uic.databasetable.setItem(0, 2, QTableWidgetItem(text[0]))
+        # Kết nối tới cơ sở dữ liệu
+        db = mysql.connector.connect(
+            user='mobeo2002',
+            password='doanquangluu',
+            host='localhost',
+            database='speed_gun'
+        )
+        cursor = db.cursor()
+
+        # Truy vấn để lấy các giá trị độc nhất trong cột 'vehicle'
+        cursor.execute("SELECT DISTINCT vehicle FROM image")
+        distinct_vehicles = [row[0] for row in cursor.fetchall()]
+
+        db.close()
+
+        # Đặt kích thước và kiểu CSS cho QInputDialog
+        dialog = QInputDialog(self)
+        dialog.setWindowTitle("Tìm kiếm theo loại phương tiện")
+        dialog.resize(500, 200)
+
+        button_box = dialog.findChild(QDialogButtonBox)
+        if button_box:
+            cancel_button = button_box.button(QDialogButtonBox.StandardButton.Cancel)
+            if cancel_button:
+                cancel_button.setText("Hủy")
+
+        # Sử dụng phương thức tĩnh getItem
+        item, ok = QInputDialog.getItem(
+            self,
+            "Tìm kiếm theo loại phương tiện",
+            "Chọn một phương tiện:",
+            distinct_vehicles,  # Danh sách các giá trị độc nhất
+            0,  # Chỉ số mặc định
+            False  # Không cho phép nhập thủ công
+        )
+
+        if ok and item:
+            self.databaseshow_partial_column("vehicle", item)  # Thực hiện truy vấn dựa trên lựa chọn
+
+
 
     def databaseshow_partial_column(self, column_name, show_value):            
         db = mysql.connector.connect(
