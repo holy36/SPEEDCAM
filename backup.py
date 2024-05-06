@@ -20,7 +20,7 @@ from PyQt6.QtGui import QPixmap, QPainter,QFont
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent, QPoint, QPointF  
 import display,search
 from PyQt6.QtWidgets import (
-    QDateTimeEdit,QSpinBox, QLineEdit, QTimeEdit, QDialogButtonBox,QLabel, QPushButton, QCalendarWidget)
+    QDateTimeEdit,QSpinBox, QLineEdit, QTimeEdit,QVBoxLayout, QComboBox, QDialogButtonBox,QLabel, QPushButton, QCalendarWidget)
 from PyQt6.QtCore import QDateTime, Qt
 import mysql.connector
 
@@ -185,6 +185,8 @@ class MainWindow(QMainWindow):
         self.uic.search_button.clicked.connect(self.search_information)
         self.uic.bground.setStyleSheet("background-color: #949084; color: white;")
         self.uic.bground.setText("Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab")
+        self.uic.connect_with_mac.setText("Kết nối tới địa chỉ")
+        self.uic.connect_with_mac.clicked.connect(self.connect_with_address)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.showMaximized()
@@ -225,6 +227,10 @@ class MainWindow(QMainWindow):
         icon6.addPixmap(QtGui.QPixmap("icon/png-transparent-search-engine-logo-illustration-computer-icons-search-button-miscellaneous-logo-internet-thumbnail.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.uic.search_button.setIcon(icon6)
         self.uic.search_button.setIconSize(QtCore.QSize(25, 30))
+        icon7 = QtGui.QIcon()
+        icon7.addPixmap(QtGui.QPixmap("icon/3681148-200.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.uic.connect_with_mac.setIcon(icon7)
+        self.uic.connect_with_mac.setIconSize(QtCore.QSize(25, 30))
 
 
         
@@ -239,7 +245,46 @@ class MainWindow(QMainWindow):
         self.uic.accept_button.clicked.connect(self.accept_information)
 
         self.uic.deny_button.setDisabled(1)
-    
+
+    def dialog_config(self, dialog, dialog_text, callback_function):
+        dialog.setWindowTitle(dialog_text)
+        dialog.resize(300, 50)  # Đặt kích thước cho cửa sổ pop-up
+
+        # Thêm một QLineEdit để nhập giá trị tên vào dialog
+        line_edit = QLineEdit(dialog)
+
+        # Thêm một QPushButton vào dialog
+        btn_ok = QPushButton('OK', dialog)
+
+        # Bố trí các thành phần trong dialog bằng QVBoxLayout
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel(dialog_text))
+        layout.addWidget(line_edit)
+        layout.addWidget(btn_ok)
+
+        # Xử lý sự kiện khi nhấn nút "OK"
+        def showValue():
+            value = line_edit.text()
+            callback_function(value)
+            dialog.close()
+
+        btn_ok.clicked.connect(showValue)
+
+        dialog.setLayout(layout)
+
+    def connect_with_address(self):
+        # Tạo một QDialog để hiển thị pop-up
+        dialog = QDialog(self)
+        def callback_function(device_address):
+            self.thread[2] = ThreadClass(index=1,mac_id=device_address)
+            self.thread[2].start()
+            self.thread[2].signal.connect(self.my_function)
+            self.thread[2].connect_status.connect(self.status_change)
+
+        self.dialog_config(dialog, "Nhập địa chỉ thiết bị bạn muốn kết nối", callback_function)
+        # Hiển thị dialog
+        dialog.exec()
+        
     def accept_information(self):
         with open('test.txt', 'r') as file:
             merge_text = file.read()
@@ -484,6 +529,7 @@ class SearchUI(QMainWindow):
         self.uic.byvehicle.clicked.connect(self.searchbyvehicle)
         self.uic.byid.clicked.connect(self.searchbyid)
         self.uic.showall.clicked.connect(self.showalldatabase)
+        self.uic.bystatus.clicked.connect(self.searchbystatus)
 
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("icon/window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -539,6 +585,11 @@ class SearchUI(QMainWindow):
                 if(j==1):
                     item=self.getImageLabel(value)
                     self.uic.databasetable.setCellWidget(i,j,item)
+                elif j == 2:
+                    if value == 0:
+                        self.uic.databasetable.setItem(i, j, QTableWidgetItem("Từ chối"))
+                    else:
+                        self.uic.databasetable.setItem(i, j, QTableWidgetItem("Đồng ý"))
                 else:
                     self.uic.databasetable.setItem(i, j, QTableWidgetItem(str(value)))
 
@@ -629,8 +680,54 @@ class SearchUI(QMainWindow):
         dialog.exec()
 
     def searchbydevice(self):
-        text=QInputDialog.getText(self,'get','ze ze:')
-        self.uic.databasetable.setItem(0, 2, QTableWidgetItem(text[0]))
+        db = mysql.connector.connect(
+            user='mobeo2002',
+            password='doanquangluu',
+            host='localhost',
+            database='speed_gun'
+        )
+        cursor = db.cursor()
+
+        cursor.execute("SELECT DISTINCT device FROM image")
+        distinct_devices = [row[0] for row in cursor.fetchall()]
+
+        db.close()
+
+        custom_dialog = QDialog(self)
+        custom_dialog.setWindowTitle("Tìm kiếm theo thiết bị")
+        custom_dialog.setMinimumSize(300, 100)  # Đặt kích thước tối thiểu cho dialog
+
+        layout = QVBoxLayout(custom_dialog)
+
+        # Tạo QComboBox và tăng kích thước
+        combo_box = QComboBox()
+        combo_box.addItems(distinct_devices)
+
+        # Đặt kích thước cố định cho QComboBox
+        combo_box.setFixedSize(300, 50)  # Đặt chiều rộng và chiều cao cố định
+
+        # Sử dụng setStyleSheet để tùy chỉnh kích thước
+        combo_box.setStyleSheet("""
+            QComboBox {
+                font-size: 16pt;  # Tăng cỡ chữ
+                padding: 10px;  # Thêm khoảng cách
+            }
+        """)
+
+        layout.addWidget(combo_box)  # Thêm combo_box vào layout
+
+        # Thêm nút OK
+        ok_button = QPushButton("OK")
+        layout.addWidget(ok_button)
+
+        ok_button.clicked.connect(lambda: custom_dialog.accept())
+
+        custom_dialog.exec()  # Hiển thị dialog
+
+        selected_device = combo_box.currentText()  # Lấy giá trị được chọn
+
+        if selected_device:
+            self.databaseshow_partial_column("device", selected_device)  # Thực hiện hành động dựa trên lựa chọn
 
     def searchbylocation(self):
         # Tạo một QDialog để hiển thị pop-up
@@ -651,6 +748,16 @@ class SearchUI(QMainWindow):
         speed_spinbox.setMaximum(200)
         speed_spinbox.setValue(60)
         speed_spinbox.setFixedSize(300, 50)  # Đặt kích thước cho ô nhập tốc độ
+        speed_spinbox.setStyleSheet("""
+        QSpinBox::up-button {
+            width: 30px;
+            height: 30px;
+        }
+        QSpinBox::down-button {
+            width: 30px;
+            height: 30px;
+        }
+        """)
         layout = QVBoxLayout()
         layout.addWidget(QLabel("Nhập tốc độ:"))
         layout.addWidget(speed_spinbox)
@@ -686,9 +793,82 @@ class SearchUI(QMainWindow):
         dialog.setLayout(layout)
         dialog.exec()
 
+    def searchbystatus(self):
+        # Tạo một QDialog để chọn trạng thái
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Chọn trạng thái")
+        dialog.resize(300, 50)  # Đặt kích cỡ dialog là 300x300
+        layout = QVBoxLayout()
+        # Tạo nút "Đồng ý"
+        btn_agree = QPushButton("Đồng ý", dialog)
+        layout.addWidget(btn_agree)
+        # Tạo nút "Từ chối"
+        btn_decline = QPushButton("Từ chối", dialog)
+        layout.addWidget(btn_decline)
+        # Xử lý sự kiện khi nhấn nút "Đồng ý"
+        def showAcceptedStatus():
+            dialog.close()
+            self.databaseshow_partial_column('status', 1)
+        btn_agree.clicked.connect(showAcceptedStatus)
+        # Xử lý sự kiện khi nhấn nút "Từ chối"
+        def showDeclinedStatus():
+            dialog.close()
+            self.databaseshow_partial_column('status', 0)
+        btn_decline.clicked.connect(showDeclinedStatus)
+        dialog.setLayout(layout)
+        # Hiển thị dialog
+        dialog.exec()
+
     def searchbyvehicle(self):
-        text=QInputDialog.getText(self,'get','ze ze:')
-        self.uic.databasetable.setItem(0, 2, QTableWidgetItem(text[0]))
+        db = mysql.connector.connect(
+            user='mobeo2002',
+            password='doanquangluu',
+            host='localhost',
+            database='speed_gun'
+        )
+        cursor = db.cursor()
+
+        cursor.execute("SELECT DISTINCT vehicle FROM image")
+        distinct_vehicles = [row[0] for row in cursor.fetchall()]
+
+        db.close()
+
+        custom_dialog = QDialog(self)
+        custom_dialog.setWindowTitle("Tìm kiếm theo loại phương tiện")
+        custom_dialog.setMinimumSize(300, 100)  # Đặt kích thước tối thiểu cho dialog
+
+        layout = QVBoxLayout(custom_dialog)
+
+        # Tạo QComboBox và tăng kích thước
+        combo_box = QComboBox()
+        combo_box.addItems(distinct_vehicles)
+
+        # Đặt kích thước cố định cho QComboBox
+        combo_box.setFixedSize(300, 50)  # Đặt chiều rộng và chiều cao cố định
+
+        # Sử dụng setStyleSheet để tùy chỉnh kích thước
+        combo_box.setStyleSheet("""
+            QComboBox {
+                font-size: 16pt;  # Tăng cỡ chữ
+                padding: 10px;  # Thêm khoảng cách
+            }
+        """)
+
+        layout.addWidget(combo_box)  # Thêm combo_box vào layout
+
+        # Thêm nút OK
+        ok_button = QPushButton("OK")
+        layout.addWidget(ok_button)
+
+        ok_button.clicked.connect(lambda: custom_dialog.accept())
+
+        custom_dialog.exec()  # Hiển thị dialog
+
+        selected_vehicle = combo_box.currentText()  # Lấy giá trị được chọn
+
+        if selected_vehicle:
+            self.databaseshow_partial_column("vehicle", selected_vehicle)  # Thực hiện hành động dựa trên lựa chọn
+
 
     def databaseshow_partial_column(self, column_name, show_value):            
         db = mysql.connector.connect(
@@ -716,8 +896,12 @@ class SearchUI(QMainWindow):
             for j, value in enumerate(row):
                 if j == 1:  # Nếu đây là cột hình ảnh
                     item = self.getImageLabel(value)
-                    print(value)
                     self.uic.databasetable.setCellWidget(i, j, item)
+                elif j == 2:
+                    if value == 0:
+                        self.uic.databasetable.setItem(i, j, QTableWidgetItem("Từ chối"))
+                    else:
+                        self.uic.databasetable.setItem(i, j, QTableWidgetItem("Đồng ý"))
                 else:
                     self.uic.databasetable.setItem(i, j, QTableWidgetItem(str(value)))
         return show_value

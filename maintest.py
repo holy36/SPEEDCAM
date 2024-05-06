@@ -20,7 +20,7 @@ from PyQt6.QtGui import QPixmap, QPainter,QFont
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent, QPoint, QPointF  
 import display,search
 from PyQt6.QtWidgets import (
-    QDateTimeEdit,QSpinBox, QLineEdit, QTimeEdit, QDialogButtonBox,QLabel, QPushButton, QCalendarWidget)
+    QDateTimeEdit,QSpinBox, QLineEdit, QTimeEdit,QVBoxLayout, QComboBox, QDialogButtonBox,QLabel, QPushButton, QCalendarWidget)
 from PyQt6.QtCore import QDateTime, Qt
 import mysql.connector
 
@@ -197,40 +197,16 @@ class MainWindow(QMainWindow):
         self.uic.bground.mousePressEvent = self.mousePressEvent
         self.clickPosition = QPoint()
         self.setWindowTitle("Hệ thống xử lý vi phạm tốc độ")
-        self.setWindowIcon(QtGui.QIcon("icon/Phu_hieu_canh_sat_giao_thong.png"))
+        self.setWindowIcon(QtGui.QIcon("icon/csgt.png"))
 
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("icon/window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.minbutton.setIcon(icon)
-        self.uic.minbutton.setIconSize(QtCore.QSize(25, 30))
-        icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("icon/png-clipart-computer-icons-derosa-music-bluetooth-bluetooth-text-trademark-thumbnail.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.connect_button.setIcon(icon2)
-        self.uic.connect_button.setIconSize(QtCore.QSize(25, 30))
-        icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("icon/pngtree-chek-mark-rounded-icon-tick-box-vector-png-image_17766700.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.accept_button.setIcon(icon3)
-        self.uic.accept_button.setIconSize(QtCore.QSize(25, 30))
-        icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap("icon/473-4730000_deny-comments-saturation-icon-png.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.deny_button.setIcon(icon4)
-        self.uic.deny_button.setIconSize(QtCore.QSize(25, 30))
-        icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap("icon/2017609-200.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.quitbutton.setIcon(icon5)
-        self.uic.quitbutton.setIconSize(QtCore.QSize(25, 30))
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("icon/54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.maxbutton.setIcon(icon1)
-        self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
-        icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap("icon/png-transparent-search-engine-logo-illustration-computer-icons-search-button-miscellaneous-logo-internet-thumbnail.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.search_button.setIcon(icon6)
-        self.uic.search_button.setIconSize(QtCore.QSize(25, 30))
-        icon7 = QtGui.QIcon()
-        icon7.addPixmap(QtGui.QPixmap("icon/3681148-200.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.connect_with_mac.setIcon(icon7)
-        self.uic.connect_with_mac.setIconSize(QtCore.QSize(25, 30))
+        self.setIcon("icon/min2.png", self.uic.minbutton)
+        self.setIcon("icon/connect_with_mac.png", self.uic.connect_with_mac, icon_size=(30, 35))  # Kích thước tùy chỉnh
+        self.setIcon("icon/quit.png", self.uic.quitbutton, icon_size=(30, 35))  # Kích thước tùy chỉnh
+        self.setIcon("icon/min.png", self.uic.maxbutton, icon_size=(30, 35))
+        self.setIcon("icon/search.png", self.uic.search_button, icon_size=(30, 35))
+        self.setIcon("icon/accept.png", self.uic.accept_button)
+        self.setIcon("icon/deny.png", self.uic.deny_button)
+        self.setIcon("icon/bluetooth.png", self.uic.connect_button)
 
 
         
@@ -246,6 +222,21 @@ class MainWindow(QMainWindow):
 
         self.uic.deny_button.setDisabled(1)
 
+    def setIcon(self, icon_path, ui_element, icon_size=(25, 30)):
+        """
+        Đặt icon cho một phần tử giao diện PyQt6.
+
+        :param icon_path: Đường dẫn tới tệp hình ảnh cho icon.
+        :param ui_element: Phần tử giao diện (ví dụ, nút hoặc QLabel) cần đặt icon.
+        :param icon_size: Kích thước của icon (rộng, cao). Mặc định là (25, 30).
+        """
+        icon = QtGui.QIcon()  # Tạo một đối tượng QIcon
+        pixmap = QtGui.QPixmap(icon_path)  # Tạo QPixmap từ đường dẫn hình ảnh
+        icon.addPixmap(pixmap, QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)  # Thêm pixmap vào icon
+
+        ui_element.setIcon(icon)  # Đặt icon cho phần tử giao diện
+        ui_element.setIconSize(QtCore.QSize(*icon_size))  # Đặt kích thước icon
+        
     def dialog_config(self, dialog, dialog_text, callback_function):
         dialog.setWindowTitle(dialog_text)
         dialog.resize(300, 50)  # Đặt kích thước cho cửa sổ pop-up
@@ -341,16 +332,10 @@ class MainWindow(QMainWindow):
     def maximize_window(self):
         # Maximize hoặc phục hồi cửa sổ
         if self.isMaximized():
-            icon1 = QtGui.QIcon()
-            icon1.addPixmap(QtGui.QPixmap("icon/maximize-icon-512x512-ari7tfdx.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-            self.uic.maxbutton.setIcon(icon1)
-            self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
+            self.setIcon("icon/max2.png", self.uic.maxbutton, icon_size=(30, 35))
             self.resize(800, 600)
         else:
-            icon1 = QtGui.QIcon()
-            icon1.addPixmap(QtGui.QPixmap("icon/54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-            self.uic.maxbutton.setIcon(icon1)
-            self.uic.maxbutton.setIconSize(QtCore.QSize(25, 30))
+            self.setIcon("icon/min.png", self.uic.maxbutton, icon_size=(30, 35))
             self.showMaximized()
 
         
@@ -531,31 +516,30 @@ class SearchUI(QMainWindow):
         self.uic.showall.clicked.connect(self.showalldatabase)
         self.uic.bystatus.clicked.connect(self.searchbystatus)
 
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("icon/window-minimize.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.minbuttonsearch.setIcon(icon)
-        self.uic.minbuttonsearch.setIconSize(QtCore.QSize(25, 30))
-        icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap("icon/2017609-200.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.quitbuttonsearch.setIcon(icon5)
-        self.uic.quitbuttonsearch.setIconSize(QtCore.QSize(25, 30))
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("icon/54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.maxbuttonsearch.setIcon(icon1)
-        self.uic.maxbuttonsearch.setIconSize(QtCore.QSize(25, 30))
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-        icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap("icon/png-transparent-search-engine-logo-illustration-computer-icons-search-button-miscellaneous-logo-internet-thumbnail.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.bgroundsearchby.setIcon(icon6)
-        self.uic.bgroundsearchby.setIconSize(QtCore.QSize(25, 30))
-        icon7 = QtGui.QIcon()
-        icon7.addPixmap(QtGui.QPixmap("icon/png-transparent-database-scalable-graphics-icon-database-icons-text-rectangle-monochrome.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        self.uic.showall.setIcon(icon7)
-        self.uic.showall.setIconSize(QtCore.QSize(30, 35))
+        self.setIcon("icon/min2.png", self.uic.minbuttonsearch, icon_size=(30, 35))
+        self.setIcon("icon/quit.png", self.uic.quitbuttonsearch, icon_size=(30, 35))  # Kích thước tùy chỉnh
+        self.setIcon("icon/min.png", self.uic.maxbuttonsearch, icon_size=(30, 35))
+        self.setIcon("icon/database.png", self.uic.showall, icon_size=(30, 35))
+        self.setIcon("icon/search.png", self.uic.bgroundsearchby, icon_size=(30, 35))
+
         self.uic.showall.setText("Hiển thị toàn bộ")
         self.showalldatabase()
 
 
+    def setIcon(self, icon_path, ui_element, icon_size=(25, 30)):
+            """
+            Đặt icon cho một phần tử giao diện PyQt6.
+
+            :param icon_path: Đường dẫn tới tệp hình ảnh cho icon.
+            :param ui_element: Phần tử giao diện (ví dụ, nút hoặc QLabel) cần đặt icon.
+            :param icon_size: Kích thước của icon (rộng, cao). Mặc định là (25, 30).
+            """
+            icon = QtGui.QIcon()  # Tạo một đối tượng QIcon
+            pixmap = QtGui.QPixmap(icon_path)  # Tạo QPixmap từ đường dẫn hình ảnh
+            icon.addPixmap(pixmap, QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)  # Thêm pixmap vào icon
+
+            ui_element.setIcon(icon)  # Đặt icon cho phần tử giao diện
+            ui_element.setIconSize(QtCore.QSize(*icon_size))  # Đặt kích thước icon
 
     def getImageLabel(self,image):
         imageLabel = QtWidgets.QLabel()
@@ -604,16 +588,10 @@ class SearchUI(QMainWindow):
     def maximize_window(self):
         # Maximize hoặc phục hồi cửa sổ
         if self.isMaximized():
-            icon1 = QtGui.QIcon()
-            icon1.addPixmap(QtGui.QPixmap("icon/maximize-icon-512x512-ari7tfdx.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-            self.uic.maxbuttonsearch.setIcon(icon1)
-            self.uic.maxbuttonsearch.setIconSize(QtCore.QSize(25, 30))
+            self.setIcon("icon/max2.png", self.uic.maxbuttonsearch, icon_size=(30, 35))
             self.resize(800, 600)
         else:
-            icon1 = QtGui.QIcon()
-            icon1.addPixmap(QtGui.QPixmap("icon/54860.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-            self.uic.maxbuttonsearch.setIcon(icon1)
-            self.uic.maxbuttonsearch.setIconSize(QtCore.QSize(25, 30))
+            self.setIcon("icon/min.png", self.uic.maxbuttonsearch, icon_size=(30, 35))
             self.showMaximized()
 
     def dialog_config(self, dialog, dialog_text, callback_function):
@@ -678,32 +656,6 @@ class SearchUI(QMainWindow):
         self.dialog_config(dialog, "Tìm kiếm theo tên", callback_function)
         # Hiển thị dialog
         dialog.exec()
-
-    def searchbydevice(self):
-        # Kết nối tới cơ sở dữ liệu và truy vấn các giá trị độc nhất trong cột 'device'
-        db = mysql.connector.connect(
-            user='mobeo2002',
-            password='doanquangluu',
-            host='localhost',
-            database='speed_gun'
-        )
-        cursor = db.cursor()
-        cursor.execute("SELECT DISTINCT device FROM image")
-        distinct_devices = [row[0] for row in cursor.fetchall()]
-        db.close()
-
-        # Hiển thị pop-up để chọn 'device'
-        item, ok = QInputDialog.getItem(
-            self,
-            "Tìm kiếm theo thiết bị",
-            "Chọn thiết bị:",
-            distinct_devices,
-            0,
-            False
-        )
-        
-        if ok and item:
-            self.databaseshow_partial_column("device", item)  # Cập nhật table widget dựa trên thiết bị đã chọn
 
     def searchbylocation(self):
         # Tạo một QDialog để hiển thị pop-up
@@ -795,8 +747,16 @@ class SearchUI(QMainWindow):
         # Hiển thị dialog
         dialog.exec()
 
+    def searchbydevice(self):
+        # Sử dụng hàm chung với tên cột và tiêu đề thích hợp
+        self.search_by_attribute("device", "Tìm kiếm theo thiết bị")
+
     def searchbyvehicle(self):
-        # Kết nối tới cơ sở dữ liệu
+        # Sử dụng hàm chung với tên cột và tiêu đề thích hợp
+        self.search_by_attribute("vehicle", "Tìm kiếm theo loại phương tiện")
+
+    def search_by_attribute(self, column_name, dialog_title):
+        # Kết nối tới cơ sở dữ liệu và truy vấn các giá trị độc nhất
         db = mysql.connector.connect(
             user='mobeo2002',
             password='doanquangluu',
@@ -805,37 +765,53 @@ class SearchUI(QMainWindow):
         )
         cursor = db.cursor()
 
-        # Truy vấn để lấy các giá trị độc nhất trong cột 'vehicle'
-        cursor.execute("SELECT DISTINCT vehicle FROM image")
-        distinct_vehicles = [row[0] for row in cursor.fetchall()]
+        query = f"SELECT DISTINCT {column_name} FROM image"
+        cursor.execute(query)
+        distinct_values = [row[0] for row in cursor.fetchall()]
 
         db.close()
 
-        # Đặt kích thước và kiểu CSS cho QInputDialog
-        dialog = QInputDialog(self)
-        dialog.setWindowTitle("Tìm kiếm theo loại phương tiện")
-        dialog.resize(500, 200)
+        # Tạo QDialog để kiểm soát kích thước và giao diện
+        custom_dialog = QDialog(self)
+        custom_dialog.setWindowTitle(dialog_title)  # Tiêu đề dialog
+        custom_dialog.resize(300, 100)  # Kích thước mặc định
 
-        button_box = dialog.findChild(QDialogButtonBox)
-        if button_box:
-            cancel_button = button_box.button(QDialogButtonBox.StandardButton.Cancel)
-            if cancel_button:
-                cancel_button.setText("Hủy")
+        layout = QVBoxLayout(custom_dialog)
 
-        # Sử dụng phương thức tĩnh getItem
-        item, ok = QInputDialog.getItem(
-            self,
-            "Tìm kiếm theo loại phương tiện",
-            "Chọn một phương tiện:",
-            distinct_vehicles,  # Danh sách các giá trị độc nhất
-            0,  # Chỉ số mặc định
-            False  # Không cho phép nhập thủ công
-        )
+        # Tạo QComboBox với các giá trị độc nhất
+        combo_box = QComboBox()
+        combo_box.addItems(distinct_values)
+        combo_box.setFixedSize(300, 50)  # Đặt chiều rộng và chiều cao cố định
 
-        if ok and item:
-            self.databaseshow_partial_column("vehicle", item)  # Thực hiện truy vấn dựa trên lựa chọn
+        # Áp dụng kiểu CSS để tăng kích thước và cỡ chữ
+        combo_box.setStyleSheet("""
+            QComboBox {
+                font-size: 16pt;  # Tăng cỡ chữ
+                padding: 10px;  # Thêm khoảng cách
+            }
+            QComboBox::down-arrow {
+                width: 20px;  # Tăng kích thước mũi tên
+                height: 20px;
+            }
+        """)
 
+        layout.addWidget(combo_box)
 
+        # Tạo nút OK và thêm vào bố cục
+        ok_button = QPushButton("OK")
+        layout.addWidget(ok_button)
+
+        # Kết nối sự kiện cho nút OK
+        ok_button.clicked.connect(lambda: custom_dialog.accept())  # Khi nhấn OK
+
+        # Hiển thị dialog
+        custom_dialog.exec()
+
+        selected_value = combo_box.currentText()  # Lấy giá trị đã chọn
+
+        if selected_value:
+            # Thực hiện hành động dựa trên lựa chọn
+            self.databaseshow_partial_column(column_name, selected_value)
 
     def databaseshow_partial_column(self, column_name, show_value):            
         db = mysql.connector.connect(
