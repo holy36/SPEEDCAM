@@ -20,7 +20,7 @@ from PyQt6.QtGui import QPixmap, QPainter,QFont
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent, QPoint, QPointF  
 import display,search
 from PyQt6.QtWidgets import (
-    QDateTimeEdit,QSpinBox, QLineEdit, QTimeEdit,QVBoxLayout, QComboBox, QDialogButtonBox,QLabel, QPushButton, QCalendarWidget)
+    QDateTimeEdit,QSpinBox, QLineEdit,QCheckBox, QTimeEdit,QVBoxLayout,QMessageBox, QComboBox, QDialogButtonBox,QLabel, QPushButton, QCalendarWidget)
 from PyQt6.QtCore import QDateTime, Qt
 import mysql.connector
 
@@ -221,6 +221,16 @@ class MainWindow(QMainWindow):
         self.uic.accept_button.clicked.connect(self.accept_information)
 
         self.uic.deny_button.setDisabled(1)
+        # notice=QMessageBox()
+        # notice.setWindowTitle("Thông báo")
+        # notice.setText("Bạn đã từ chối bản tin")
+        # notice.setIcon(QMessageBox.Icon.Information)
+        # notice.setStyleSheet(
+        #     "QLabel { margin-left: 5px; font-size: 20px; } QPushButton{ width:100px; font-size: 15px; }" 
+        # )
+        # notice.exec()
+
+
 
     def setIcon(self, icon_path, ui_element, icon_size=(25, 30)):
         """
@@ -523,8 +533,40 @@ class SearchUI(QMainWindow):
         self.setIcon("icon/search.png", self.uic.bgroundsearchby, icon_size=(30, 35))
 
         self.uic.showall.setText("Hiển thị toàn bộ")
+        self.uic.databasetable.setColumnCount(self.uic.databasetable.columnCount() + 1)  # Tăng số cột
+        
+
         self.showalldatabase()
 
+    def delete_checked_rows(self, index):
+        if index == self.uic.databasetable.columnCount() - 1:  # Kiểm tra nếu là cột "Xóa dữ liệu"
+            db = mysql.connector.connect(
+                user='mobeo2002',
+                password='doanquangluu',
+                host='localhost',
+                database='speed_gun'
+            )
+            cursor = db.cursor()
+
+            rows_to_delete = []
+            for row in range(self.uic.databasetable.rowCount()):
+                # Lấy checkbox từ ô trong cột "Xóa dữ liệu"
+                # checkbox = self.uic.databasetable.cellWidget(row, self.uic.databasetable.columnCount() - 1)  # Kiểm tra lại chỉ số cột
+                checkbox = self.uic.databasetable.cellWidget(row, self.uic.databasetable.columnCount() - 1)  # Kiểm tra lại chỉ số cột
+                print(checkbox)
+                if checkbox and checkbox.isChecked():  # Đảm bảo checkbox không phải là `None`
+                    id_to_delete = self.uic.databasetable.item(row, 0).text()  # Ví dụ: Lấy ID từ ô đầu tiên
+                    rows_to_delete.append(id_to_delete)
+
+            # Thực hiện truy vấn xóa
+            for id in rows_to_delete:
+                cursor.execute("DELETE FROM image WHERE id = %s", (id,))
+
+            db.commit()  # Lưu các thay đổi
+            db.close()  # Đóng kết nối
+
+            # Cập nhật lại bảng sau khi xóa
+            self.showalldatabase()  # Gọi hàm để cập nhật lại bảng
 
     def setIcon(self, icon_path, ui_element, icon_size=(25, 30)):
             """
@@ -551,7 +593,7 @@ class SearchUI(QMainWindow):
         return imageLabel
     
     def showalldatabase(self):
-        self.uic.databasetable.clearContents()
+        
         db = mysql.connector.connect(
             user='mobeo2002',
             password='doanquangluu',
@@ -576,6 +618,18 @@ class SearchUI(QMainWindow):
                         self.uic.databasetable.setItem(i, j, QTableWidgetItem("Đồng ý"))
                 else:
                     self.uic.databasetable.setItem(i, j, QTableWidgetItem(str(value)))
+        self.uic.databasetable.setHorizontalHeaderLabels([
+            "ID","Hình ảnh","Trạng thái","Tên", "Loại phương tiện", "Biển số", "Tốc độ", "Ngày", "Địa điểm", "Thiết bị",  "Xóa dữ liệu"
+        ])
+
+        # Thêm checkbox vào mỗi ô trong cột "Xóa dữ liệu"
+        for row in range(self.uic.databasetable.rowCount()):
+            checkbox =QCheckBox()  # Tạo QCheckBox
+            checkbox.setStyleSheet("QCheckBox::indicator { width:30px; height: 30px; margin-left: 65px }");
+            self.uic.databasetable.setCellWidget(row, self.uic.databasetable.columnCount() - 1, checkbox)  # Thêm checkbox vào ô
+        # Xử lý sự kiện khi nhấn vào tiêu đề "Xóa dữ liệu"
+        header = self.uic.databasetable.horizontalHeader()  # Lấy tiêu đề
+        header.sectionClicked.connect(self.delete_checked_rows)  # Kết nối với hàm để xóa dữ liệu
 
     def exit(self):
         # Thực hiện các hành động bạn muốn khi thoát ứng dụng
@@ -624,6 +678,7 @@ class SearchUI(QMainWindow):
         # Tạo một QDialog để hiển thị pop-up
         dialog = QDialog(self)
         def callback_function(name_value):
+            self.uic.databasetable.clearContents()
             self.databaseshow_partial_column('name', name_value)
         self.dialog_config(dialog, "Tìm kiếm theo tên", callback_function)
         # Hiển thị dialog
@@ -642,6 +697,7 @@ class SearchUI(QMainWindow):
         dialog.setLayout(layout)
         def showSelectedDate():
             selected_date = calendar.selectedDate().toString('yyyy-MM-dd')
+            self.uic.databasetable.clearContents()
             self.databaseshow_partial_column('date', selected_date)
             dialog.close()
 
@@ -652,6 +708,7 @@ class SearchUI(QMainWindow):
         # Tạo một QDialog để hiển thị pop-up
         dialog = QDialog(self)
         def callback_function(plate_value):
+            self.uic.databasetable.clearContents()
             self.databaseshow_partial_column('plate', plate_value)
         self.dialog_config(dialog, "Tìm kiếm theo tên", callback_function)
         # Hiển thị dialog
@@ -661,6 +718,7 @@ class SearchUI(QMainWindow):
         # Tạo một QDialog để hiển thị pop-up
         dialog = QDialog(self)
         def callback_function(location_value):
+            self.uic.databasetable.clearContents()
             self.databaseshow_partial_column('location', location_value)
         self.dialog_config(dialog, "Tìm kiếm theo vị trí", callback_function)
         # Hiển thị dialog
@@ -693,6 +751,7 @@ class SearchUI(QMainWindow):
         layout.addWidget(btn_ok)
         def showSpeed():
             speed_value = speed_spinbox.value()
+            self.uic.databasetable.clearContents()
             self.databaseshow_partial_column('speed', speed_value)
             dialog.close()
         btn_ok.clicked.connect(showSpeed)
@@ -715,6 +774,7 @@ class SearchUI(QMainWindow):
         layout.addWidget(btn_ok)
         def showId():
             id_value = speed_spinbox.value()
+            self.uic.databasetable.clearContents()
             self.databaseshow_partial_column('id', id_value)
             dialog.close()
         btn_ok.clicked.connect(showId)
@@ -736,11 +796,13 @@ class SearchUI(QMainWindow):
         # Xử lý sự kiện khi nhấn nút "Đồng ý"
         def showAcceptedStatus():
             dialog.close()
+            self.uic.databasetable.clearContents()
             self.databaseshow_partial_column('status', 1)
         btn_agree.clicked.connect(showAcceptedStatus)
         # Xử lý sự kiện khi nhấn nút "Từ chối"
         def showDeclinedStatus():
             dialog.close()
+            self.uic.databasetable.clearContents()
             self.databaseshow_partial_column('status', 0)
         btn_decline.clicked.connect(showDeclinedStatus)
         dialog.setLayout(layout)
@@ -811,9 +873,10 @@ class SearchUI(QMainWindow):
 
         if selected_value:
             # Thực hiện hành động dựa trên lựa chọn
+            self.uic.databasetable.clearContents()
             self.databaseshow_partial_column(column_name, selected_value)
 
-    def databaseshow_partial_column(self, column_name, show_value):            
+    def databaseshow_partial_column(self, column_name, show_value):          
         db = mysql.connector.connect(
             user='mobeo2002',
             password='doanquangluu',
@@ -847,6 +910,18 @@ class SearchUI(QMainWindow):
                         self.uic.databasetable.setItem(i, j, QTableWidgetItem("Đồng ý"))
                 else:
                     self.uic.databasetable.setItem(i, j, QTableWidgetItem(str(value)))
+        self.uic.databasetable.setHorizontalHeaderLabels([
+            "ID","Hình ảnh","Trạng thái","Tên", "Loại phương tiện", "Biển số", "Tốc độ", "Ngày", "Địa điểm", "Thiết bị",  "Xóa dữ liệu"
+        ])
+
+        # Thêm checkbox vào mỗi ô trong cột "Xóa dữ liệu"
+        for row in range(self.uic.databasetable.rowCount()):
+            checkbox = QtWidgets.QCheckBox()  # Tạo QCheckBox
+            checkbox.setStyleSheet("QCheckBox::indicator { width:30px; height: 30px; margin-left: 65px }");
+            self.uic.databasetable.setCellWidget(row, self.uic.databasetable.columnCount() - 1, checkbox)  # Thêm checkbox vào ô
+        # Xử lý sự kiện khi nhấn vào tiêu đề "Xóa dữ liệu"
+        header = self.uic.databasetable.horizontalHeader()  # Lấy tiêu đề
+        header.sectionClicked.connect(self.delete_checked_rows)  # Kết nối với hàm để xóa dữ liệu  
         return show_value
 
 
