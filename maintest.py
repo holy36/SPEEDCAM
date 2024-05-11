@@ -539,34 +539,56 @@ class SearchUI(QMainWindow):
         self.showalldatabase()
 
     def delete_checked_rows(self, index):
-        if index == self.uic.databasetable.columnCount() - 1:  # Kiểm tra nếu là cột "Xóa dữ liệu"
-            db = mysql.connector.connect(
-                user='mobeo2002',
-                password='doanquangluu',
-                host='localhost',
-                database='speed_gun'
-            )
-            cursor = db.cursor()
+            if index == self.uic.databasetable.columnCount() - 1:  # Kiểm tra nếu là cột "Xóa dữ liệu"
+                msg_box = QMessageBox()
 
-            rows_to_delete = []
-            for row in range(self.uic.databasetable.rowCount()):
-                # Lấy checkbox từ ô trong cột "Xóa dữ liệu"
-                # checkbox = self.uic.databasetable.cellWidget(row, self.uic.databasetable.columnCount() - 1)  # Kiểm tra lại chỉ số cột
-                checkbox = self.uic.databasetable.cellWidget(row, self.uic.databasetable.columnCount() - 1)  # Kiểm tra lại chỉ số cột
-                print(checkbox)
-                if checkbox and checkbox.isChecked():  # Đảm bảo checkbox không phải là `None`
-                    id_to_delete = self.uic.databasetable.item(row, 0).text()  # Ví dụ: Lấy ID từ ô đầu tiên
-                    rows_to_delete.append(id_to_delete)
+                # Thiết lập tiêu đề và nội dung
+                msg_box.setWindowTitle('Xác nhận xóa dữ liệu')
+                msg_box.setText('Bạn có chắc chắn muốn xóa dữ liệu đã chọn?')
 
-            # Thực hiện truy vấn xóa
-            for id in rows_to_delete:
-                cursor.execute("DELETE FROM image WHERE id = %s", (id,))
+                # Thiết lập các nút và giá trị mặc định
+                yes_button = msg_box.addButton('Có', QMessageBox.ButtonRole.YesRole)
+                no_button = msg_box.addButton('Không', QMessageBox.ButtonRole.NoRole)
+                msg_box.setDefaultButton(no_button)
 
-            db.commit()  # Lưu các thay đổi
-            db.close()  # Đóng kết nối
+                # Thiết lập kích thước của nút bấm
+                for button in [yes_button, no_button]:
+                    button.setFixedSize(100,50)  # Thiết lập chiều rộng tối đa của nút
+               # Thiết lập kích thước của hộp thoại
+                msg_box.setStyleSheet("QLabel{min-width: 400px; font-size: 20px; min-height: 60px}")  # Thiết lập kích thước tối thiểu của label
 
-            # Cập nhật lại bảng sau khi xóa
-            self.showalldatabase()  # Gọi hàm để cập nhật lại bảng
+                # Hiển thị hộp thoại và chờ cho đến khi người dùng chọn một nút
+                reply = msg_box.exec()
+
+                # Xử lý phản hồi từ người dùng
+                if reply == QMessageBox.StandardButton.Yes:
+                    db = mysql.connector.connect(
+                        user='mobeo2002',
+                        password='doanquangluu',
+                        host='localhost',
+                        database='speed_gun'
+                    )
+                    cursor = db.cursor()
+
+                    rows_to_delete = []
+                    for row in range(self.uic.databasetable.rowCount()):
+                        # Lấy checkbox từ ô trong cột "Xóa dữ liệu"
+                        # checkbox = self.uic.databasetable.cellWidget(row, self.uic.databasetable.columnCount() - 1)  # Kiểm tra lại chỉ số cột
+                        checkbox = self.uic.databasetable.cellWidget(row, self.uic.databasetable.columnCount() - 1)  # Kiểm tra lại chỉ số cột
+                        print(checkbox)
+                        if checkbox and checkbox.isChecked():  # Đảm bảo checkbox không phải là `None`
+                            id_to_delete = self.uic.databasetable.item(row, 0).text()  # Ví dụ: Lấy ID từ ô đầu tiên
+                            rows_to_delete.append(id_to_delete)
+
+                    # Thực hiện truy vấn xóa
+                    for id in rows_to_delete:
+                        cursor.execute("DELETE FROM image WHERE id = %s", (id,))
+
+                    db.commit()  # Lưu các thay đổi
+                    db.close()  # Đóng kết nối
+
+                    # Cập nhật lại bảng sau khi xóa
+                    self.showalldatabase()  # Gọi hàm để cập nhật lại bảng
 
     def setIcon(self, icon_path, ui_element, icon_size=(25, 30)):
             """
