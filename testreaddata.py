@@ -54,7 +54,7 @@ def format_exif(exif_info):
 
 # Kết nối sự kiện cho nút nhấn
 def on_button_clicked():
-    image_path = "test.jpg"  # Thay bằng đường dẫn hình ảnh của bạn
+    image_path = "image_send.jpg"  # Thay bằng đường dẫn hình ảnh của bạn
     # Đọc thông tin EXIF
     exif_info = get_exif_info(image_path)
     exif_str=str(exif_info)

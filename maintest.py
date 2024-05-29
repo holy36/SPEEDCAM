@@ -547,21 +547,23 @@ class SearchUI(QMainWindow):
                 msg_box.setText('Bạn có chắc chắn muốn xóa dữ liệu đã chọn?')
 
                 # Thiết lập các nút và giá trị mặc định
-                yes_button = msg_box.addButton('Có', QMessageBox.ButtonRole.YesRole)
-                no_button = msg_box.addButton('Không', QMessageBox.ButtonRole.NoRole)
-                msg_box.setDefaultButton(no_button)
+                msg_box.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No)
+                msg_box.button(QtWidgets.QMessageBox.StandardButton.Yes).setText("Có")
+                msg_box.button(QtWidgets.QMessageBox.StandardButton.No).setText("Không")
+            
 
                 # Thiết lập kích thước của nút bấm
-                for button in [yes_button, no_button]:
-                    button.setFixedSize(100,50)  # Thiết lập chiều rộng tối đa của nút
+                for button in [ msg_box.button(QtWidgets.QMessageBox.StandardButton.Yes),  msg_box.button(QtWidgets.QMessageBox.StandardButton.No)]:
+                    button.setFixedSize(100,50)  # Thiết lập chiều rộng tối đa củanút
                # Thiết lập kích thước của hộp thoại
                 msg_box.setStyleSheet("QLabel{min-width: 400px; font-size: 20px; min-height: 60px}")  # Thiết lập kích thước tối thiểu của label
 
                 # Hiển thị hộp thoại và chờ cho đến khi người dùng chọn một nút
                 reply = msg_box.exec()
-
+                print("reply 0: ",reply)
                 # Xử lý phản hồi từ người dùng
                 if reply == QMessageBox.StandardButton.Yes:
+                    print("reply Y: ",reply)
                     db = mysql.connector.connect(
                         user='mobeo2002',
                         password='doanquangluu',
@@ -589,6 +591,8 @@ class SearchUI(QMainWindow):
 
                     # Cập nhật lại bảng sau khi xóa
                     self.showalldatabase()  # Gọi hàm để cập nhật lại bảng
+                else:
+                    print("reply N: ",reply)
 
     def setIcon(self, icon_path, ui_element, icon_size=(25, 30)):
             """
