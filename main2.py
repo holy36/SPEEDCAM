@@ -15,7 +15,7 @@ from PyQt6.QtCore import QCoreApplication
 import bluetooth
 import sys
 from time import sleep
-from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QMessageBox, QDialog, QInputDialog, QTableWidgetItem
+from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QMessageBox, QDialog, QInputDialog, QTableWidgetItem, QTextEdit
 from PyQt6.QtGui import QPixmap, QPainter,QFont
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent, QPoint, QPointF  
 import display,search
@@ -234,6 +234,7 @@ class MainWindow(QMainWindow):
 
 
     def show_information(self):
+        # Tạo thông báo với hướng dẫn
         instructions = (
             "1. Nhấn nút 'Bật Bluetooth' để bắt đầu quét các thiết bị Bluetooth xung quanh. Sau khi quá trình quét hoàn tất, "
             "các thiết bị Bluetooth nhận diện được sẽ hiển thị trong 'Danh sách thiết bị Bluetooth'. Nếu thiết bị mong muốn "
@@ -245,16 +246,30 @@ class MainWindow(QMainWindow):
             "4. Ngoài ra, người dùng có thể nhấn nút 'Tìm kiếm' để tìm kiếm và xem lại các bản tin đã được xác nhận."
         )
 
-        msg = QMessageBox(self)
-        msg.setWindowTitle("Hướng dẫn sử dụng")
-        msg.setText(instructions)
-        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
-        
-        # Thiết lập kích thước nút Ok
-        ok_button = msg.button(QMessageBox.StandardButton.Ok)
-        ok_button.setFixedSize(80, 80)
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Hướng dẫn sử dụng")
+        dialog.resize(600, 400)  # Đặt kích thước của QDialog
 
-        msg.exec()
+        text_edit = QTextEdit()
+        text_edit.setText(instructions)
+        text_edit.setReadOnly(True)
+        text_edit.setStyleSheet("font-size: 16px;")  # Điều chỉnh cỡ chữ ở đây
+
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+        button_box.accepted.connect(dialog.accept)
+
+        # Thiết lập kích thước nút Ok
+        ok_button = button_box.button(QDialogButtonBox.StandardButton.Ok)
+        ok_button.setFixedSize(60, 30)  # Đặt kích thước nút Ok
+
+        layout = QVBoxLayout()
+        layout.addWidget(text_edit)
+        layout.addWidget(button_box)
+
+        dialog.setLayout(layout)
+        dialog.exec()
+
+
     def setIcon(self, icon_path, ui_element, icon_size=(25, 30)):
         """
         Đặt icon cho một phần tử giao diện PyQt6.
