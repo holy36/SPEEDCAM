@@ -187,6 +187,7 @@ class MainWindow(QMainWindow):
         self.uic.bground.setText("Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab")
         self.uic.connect_with_mac.setText("Kết nối tới địa chỉ")
         self.uic.connect_with_mac.clicked.connect(self.connect_with_address)
+        self.uic.information_button.clicked.connect(self.show_information)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.showMaximized()
@@ -207,6 +208,7 @@ class MainWindow(QMainWindow):
         self.setIcon("icon/accept.png", self.uic.accept_button)
         self.setIcon("icon/deny.png", self.uic.deny_button)
         self.setIcon("icon/bluetooth.png", self.uic.connect_button)
+        self.setIcon("icon/in4.png", self.uic.information_button,icon_size=(30, 35))
 
 
         
@@ -221,17 +223,38 @@ class MainWindow(QMainWindow):
         self.uic.accept_button.clicked.connect(self.accept_information)
 
         self.uic.deny_button.setDisabled(1)
-        notice=QMessageBox()
-        notice.setWindowTitle("Thông báo")
-        notice.setText("Bạn đã từ chối bản tin")
-        notice.setIcon(QMessageBox.Icon.Information)
-        notice.setStyleSheet(
-            "QLabel { margin-left: 5px; font-size: 20px; } QPushButton{ width:100px; font-size: 15px; }" 
+        # notice=QMessageBox()
+        # notice.setWindowTitle("Thông báo")
+        # notice.setText("Bạn đã từ chối bản tin")
+        # notice.setIcon(QMessageBox.Icon.Information)
+        # notice.setStyleSheet(
+        #     "QLabel { margin-left: 5px; font-size: 20px; } QPushButton{ width:100px; font-size: 15px; }" 
+        # )
+        # notice.exec()
+
+
+    def show_information(self):
+        instructions = (
+            "1. Nhấn nút 'Bật Bluetooth' để bắt đầu quét các thiết bị Bluetooth xung quanh. Sau khi quá trình quét hoàn tất, "
+            "các thiết bị Bluetooth nhận diện được sẽ hiển thị trong 'Danh sách thiết bị Bluetooth'. Nếu thiết bị mong muốn "
+            "không xuất hiện trong danh sách, bạn có thể kết nối trực tiếp bằng cách nhập địa chỉ MAC của thiết bị và nhấn nút 'Kết nối bằng địa chỉ MAC'.\n\n"
+            "2. Trong trường hợp kết nối thất bại, hãy thử kết nối lại. Khi kết nối thành công, chờ thiết bị Máy bắn tốc độ gửi bản tin.\n\n"
+            "3. Sau khi nhận được bản tin, người sử dụng có hai lựa chọn:\n"
+            "   - Nhấn nút 'Gửi lên Server' (nút màu xanh) nếu chấp nhận bản tin đạt chuẩn và muốn gửi lên Server.\n"
+            "   - Nhấn nút 'Chụp lại ảnh mới' (nút màu đỏ) nếu hình ảnh chưa đạt chuẩn và yêu cầu Máy bắn tốc độ chụp lại ảnh mới.\n\n"
+            "4. Ngoài ra, người dùng có thể nhấn nút 'Tìm kiếm' để tìm kiếm và xem lại các bản tin đã được xác nhận."
         )
-        notice.exec()
 
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Hướng dẫn sử dụng")
+        msg.setText(instructions)
+        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+        
+        # Thiết lập kích thước nút Ok
+        ok_button = msg.button(QMessageBox.StandardButton.Ok)
+        ok_button.setFixedSize(80, 80)
 
-
+        msg.exec()
     def setIcon(self, icon_path, ui_element, icon_size=(25, 30)):
         """
         Đặt icon cho một phần tử giao diện PyQt6.

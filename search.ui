@@ -21,7 +21,7 @@
        <number>0</number>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,25,2,2,2">
+       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,25,2,2,2,2">
         <item>
          <widget class="QPushButton" name="showall">
           <property name="minimumSize">
@@ -48,6 +48,19 @@
           </property>
           <property name="text">
            <string>Cơ sở dữ liệu Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="instruction_button_search">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
           </property>
          </widget>
         </item>
@@ -93,7 +106,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,10">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,10">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
@@ -118,58 +131,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="byid">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>40</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Theo ID</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="bystatus">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>40</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Theo trạng thái</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="byname">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>40</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Theo tên</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="byvehicle">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>40</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Theo phương tiện</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QPushButton" name="byplate">
             <property name="minimumSize">
              <size>
@@ -178,7 +139,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Theo biển số </string>
+             <string>Theo biển số phương tiện</string>
             </property>
            </widget>
           </item>
@@ -191,7 +152,46 @@
              </size>
             </property>
             <property name="text">
-             <string>Theo tốc độ</string>
+             <string>Theo tốc độ vi phạm</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="bystatus">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>40</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Theo trạng thái xác nhận</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="byname">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>40</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Theo tên người vi phạm</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="byvehicle">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>40</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Theo phương tiện vi phạm</string>
             </property>
            </widget>
           </item>
@@ -204,7 +204,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Theo ngày</string>
+             <string>Theo ngày vi phạm</string>
             </property>
            </widget>
           </item>
@@ -217,7 +217,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Theo vị trí</string>
+             <string>Theo vị trí ghi hình</string>
             </property>
            </widget>
           </item>
@@ -230,7 +230,20 @@
              </size>
             </property>
             <property name="text">
-             <string>Theo thiết bị</string>
+             <string>Theo thiết bị ghi hình</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="byid">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>40</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Theo ID</string>
             </property>
            </widget>
           </item>
