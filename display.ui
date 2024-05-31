@@ -179,7 +179,7 @@
          <layout class="QHBoxLayout" name="image_layout"/>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout" stretch="15,5">
+         <layout class="QVBoxLayout" name="verticalLayout" stretch="30,9">
           <item>
            <widget class="QTextEdit" name="textEdit">
             <property name="readOnly">

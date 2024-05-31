@@ -231,6 +231,9 @@ class MainWindow(QMainWindow):
         #     "QLabel { margin-left: 5px; font-size: 20px; } QPushButton{ width:100px; font-size: 15px; }" 
         # )
         # notice.exec()
+        self.uic.instruction_text.setText("Sau khi nhận được bản tin, người sử dụng có hai lựa chọn:\n- Nhấn nút 'Gửi lên Server' (nút màu xanh) nếu chấp nhận bản tin đạt chuẩn và muốn gửi lên Server.\n- Nhấn nút 'Chụp lại ảnh mới' (nút màu đỏ) nếu hình ảnh chưa đạt chuẩn và yêu cầu Máy bắn tốc độ chụp lại ảnh mới.\n\n")
+        self.uic.instruction_text.setStyleSheet("font-size: 14pt;")
+        self.uic.instruction_text.setDisabled(1)
         self.show_info_in_text_edit()
 
 
