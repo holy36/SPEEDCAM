@@ -27,8 +27,10 @@ import mysql.connector
 
 
 class DeviceDialog(QDialog):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, main_window, parent=None):
+        super().__init__(parent)
+        self.main_window = main_window  # Đây là cách chính xác để truyền tham chiếu của MainWindow vào DeviceDialog
+
         self.setWindowTitle("Danh sách các Thiết bị Bluetooth đã lưu trữ")
         self.setGeometry(100, 100, 1000, 600)
         
@@ -86,15 +88,19 @@ class DeviceDialog(QDialog):
         self.setLayout(layout)
         
     def connect_device(self):
-            selected_device = None
-            for row in range(self.table.rowCount()):
-                if self.table.item(row, 0).isSelected() or self.table.item(row, 1).isSelected():
-                    selected_device = (self.table.item(row, 0).text(), self.table.item(row, 1).text())
-                    break
-            if selected_device:
-                QMessageBox.information(self, "Kết nối Bluetooth", f"Kết nối tới thiết bị: {selected_device[0]}\nĐịa chỉ MAC: {selected_device[1]}")
-            else:
-                QMessageBox.warning(self, "Cảnh báo", "Hãy chọn 1 thiết bị để kết nối!!!")
+        selected_device = None
+        for row in range(self.table.rowCount()):
+            if self.table.item(row, 0).isSelected() or self.table.item(row, 1).isSelected():
+                selected_device = (self.table.item(row, 0).text(), self.table.item(row, 1).text())
+                break
+        if selected_device:
+            self.thread = [None, None, None]  # Khởi tạo self.thread là một danh sách chứa 3 phần tử None
+            self.thread[2] = ThreadClass(index=1, mac_id=selected_device[1])
+            self.thread[2].start()
+            self.thread[2].signal.connect(self.main_window.my_function)
+            self.thread[2].connect_status.connect(self.main_window.status_change)
+        else:
+            QMessageBox.warning(self, "Cảnh báo", "Hãy chọn 1 thiết bị để kết nối!!!")
 
     def edit_device(self):
         selected_device = None
@@ -473,8 +479,9 @@ class MainWindow(QMainWindow):
         self.show_info_in_text_edit()
 
     def show_device_dialog(self):
-            dialog = DeviceDialog()
-            dialog.exec()
+        dialog = DeviceDialog(self)  # Truyền tham chiếu của MainWindow vào DeviceDialog
+        dialog.exec()
+        # Gắn kết sự kiện device_list_select của MainWindow với phương thức connect_device của DeviceDialog
 
     def show_info_in_text_edit(self):
         info = """
