@@ -15,7 +15,7 @@ from PyQt6.QtCore import QCoreApplication
 import bluetooth
 import sys
 from time import sleep
-from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QMessageBox, QDialog, QInputDialog, QTableWidgetItem, QTextEdit
+from PyQt6.QtWidgets import QHeaderView, QHBoxLayout, QVBoxLayout, QTableWidget, QApplication,QCheckBox, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QMessageBox, QDialog, QInputDialog, QTableWidgetItem, QTextEdit
 from PyQt6.QtGui import QPixmap, QPainter,QFont
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent, QPoint, QPointF  
 import display,search
@@ -24,6 +24,237 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import QDateTime, Qt
 import mysql.connector
 
+
+
+class DeviceDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Danh sách các Thiết bị Bluetooth đã lưu trữ")
+        self.setGeometry(100, 100, 1000, 600)
+        
+        self.db = mysql.connector.connect(
+            user='mobeo2002',
+            password='doanquangluu',
+            host='localhost',
+            database='speed_gun'
+        )
+        
+        self.initUI()
+        
+    def initUI(self):
+        layout = QVBoxLayout()
+        
+        self.table = QTableWidget()
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(["Tên", "Địa chỉ MAC", "Mô tả", "Xóa"])
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        layout.addWidget(self.table)
+        self.table.setRowHeight(0, 50)  # Thiết lập chiều cao cho hàng đầu tiên là 50 pixel
+        self.table.setRowHeight(1, 40)  # Thiết lập chiều cao cho hàng thứ hai là 40 pixel
+        # Tiếp tục thiết lập cho các hàng khác nếu cần
+        
+        # Thiết lập chiều rộng cho mỗi cột
+        self.table.setColumnWidth(0, 200)  # Thiết lập kích thước cho cột "Tên" là 200 pixel
+        self.table.setColumnWidth(1, 200)  # Thiết lập kích thước cho cột "Địa chỉ MAC" là 200 pixel
+        self.table.setColumnWidth(2, 300)  # Thiết lập kích thước cho cột "Mô tả" là 300 pixel
+        self.table.setColumnWidth(3, 100)  # Thiết lập kích thước cho cột "Xóa" là 100 pixel
+        self.load_devices()
+        
+        button_layout = QHBoxLayout()
+
+        list_connect = QPushButton("Kết nối")
+        list_connect.clicked.connect(self.connect_device)
+        button_layout.addWidget(list_connect)
+        list_connect.setFixedSize(250,100)
+        
+        add_button = QPushButton("Thêm thiết bị")
+        add_button.clicked.connect(self.add_device)
+        button_layout.addWidget(add_button)
+        add_button.setFixedSize(250,100)
+
+        edit_button = QPushButton("Sửa thông tin")
+        edit_button.clicked.connect(self.edit_device)
+        button_layout.addWidget(edit_button)
+        layout.addLayout(button_layout)
+        edit_button.setFixedSize(250,100)
+
+        delete_button = QPushButton("Xóa thiết bị")
+        delete_button.clicked.connect(self.delete_device)
+        button_layout.addWidget(delete_button)
+        delete_button.setFixedSize(250,100)
+        
+        self.setLayout(layout)
+        
+    def connect_device(self):
+            selected_device = None
+            for row in range(self.table.rowCount()):
+                if self.table.item(row, 0).isSelected() or self.table.item(row, 1).isSelected():
+                    selected_device = (self.table.item(row, 0).text(), self.table.item(row, 1).text())
+                    break
+            if selected_device:
+                QMessageBox.information(self, "Kết nối Bluetooth", f"Kết nối tới thiết bị: {selected_device[0]}\nĐịa chỉ MAC: {selected_device[1]}")
+            else:
+                QMessageBox.warning(self, "Cảnh báo", "Hãy chọn 1 thiết bị để kết nối!!!")
+
+    def edit_device(self):
+        selected_device = None
+        for row in range(self.table.rowCount()):
+            if self.table.item(row, 0).isSelected() or self.table.item(row, 1).isSelected():
+                selected_device = (self.table.item(row, 0).text(), self.table.item(row, 1).text(), self.table.item(row, 2).text())
+                break
+        if selected_device:
+            dialog = QDialog(self)
+            dialog.setWindowTitle("Sửa thông tin thiết bị")
+            dialog.setGeometry(100, 100, 300, 200)
+
+            layout = QVBoxLayout()
+
+            name_label = QLabel("Nhập tên thiết bị:")
+            layout.addWidget(name_label)
+
+            name_input = QLineEdit()
+            name_input.setText(selected_device[0])
+            layout.addWidget(name_input)
+
+            mac_label = QLabel("Nhập địa chỉ MAC:")
+            layout.addWidget(mac_label)
+
+            mac_input = QLineEdit()
+            mac_input.setText(selected_device[1])
+            layout.addWidget(mac_input)
+
+            describe_label = QLabel("Nhập mô tả (Không bắt buộc):")
+            layout.addWidget(describe_label)
+
+            describe_input = QLineEdit()
+            describe_input.setText(selected_device[2])
+            layout.addWidget(describe_input)
+
+            error_label = QLabel("")
+            error_label.setStyleSheet("color: red")
+            layout.addWidget(error_label)
+
+            button_layout = QHBoxLayout()
+
+            ok_button = QPushButton("OK")
+            def on_ok():
+                name = name_input.text()
+                mac_address = mac_input.text()
+                describe = describe_input.text() if describe_input.text() else "No description"
+
+                if not name or not mac_address:
+                    error_label.setText("Tên thiết bị và địa chỉ MAC không thể để trống")
+                    return
+
+                cursor = self.db.cursor()
+                cursor.execute("UPDATE device_mac_address SET name = %s, `describe` = %s WHERE mac_address = %s",
+                            (name, describe, mac_address))
+                self.db.commit()  # Đảm bảo lưu các thay đổi vào cơ sở dữ liệu
+                cursor.close()
+                dialog.accept()
+
+                # Sau khi người dùng chỉnh sửa và nhấn OK, ta cần tải lại danh sách thiết bị để cập nhật giao diện
+                self.load_devices()
+
+            ok_button.clicked.connect(on_ok)  # Kích hoạt hàm on_ok() khi nút OK được nhấn
+            button_layout.addWidget(ok_button)
+
+            cancel_button = QPushButton("Hủy")
+            cancel_button.clicked.connect(dialog.reject)
+            button_layout.addWidget(cancel_button)
+
+            layout.addLayout(button_layout)
+            dialog.setLayout(layout)
+            dialog.exec()
+                                
+    def load_devices(self):
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        cursor = self.db.cursor()
+        cursor.execute("SELECT name, mac_address, `describe` FROM device_mac_address")
+        devices = cursor.fetchall()
+        self.table.setRowCount(len(devices))
+        for row_num, device in enumerate(devices):
+            self.table.setItem(row_num, 0, QTableWidgetItem(device[0]))
+            self.table.setItem(row_num, 1, QTableWidgetItem(device[1]))
+            self.table.setItem(row_num, 2, QTableWidgetItem(device[2]))
+            checkbox = QCheckBox()
+            self.table.setCellWidget(row_num, 3, checkbox)
+        cursor.close()
+
+    def add_device(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Thêm thiết bị Bluetooth muốn lưu trữ")
+        dialog.setGeometry(100, 100, 300, 200)
+        
+        layout = QVBoxLayout()
+        
+        name_label = QLabel("Nhập tên thiết bị:")
+        layout.addWidget(name_label)
+
+        name_input = QLineEdit()
+        name_input.setPlaceholderText("Nhập tên thiết bị")
+        layout.addWidget(name_input)
+
+        mac_label = QLabel("Nhập địa chỉ MAC:")
+        layout.addWidget(mac_label)
+
+        mac_input = QLineEdit()
+        mac_input.setPlaceholderText("Nhập địa chỉ MAC")
+        layout.addWidget(mac_input)
+
+        describe_label = QLabel("Nhập mô tả:")
+        layout.addWidget(describe_label)
+
+        describe_input = QLineEdit()
+        describe_input.setPlaceholderText("Nhập mô tả")
+        layout.addWidget(describe_input)
+        
+        error_label = QLabel("")
+        error_label.setStyleSheet("color: red")
+        layout.addWidget(error_label)
+        
+        button_layout = QHBoxLayout()
+        
+        ok_button = QPushButton("OK")
+        def on_ok():
+            name = name_input.text()
+            mac_address = mac_input.text()
+            describe = describe_input.text() if describe_input.text() else "Không có mô tả"
+            
+            if not name or not mac_address:
+                error_label.setText("Tên thiết bị và địa chỉ không thể để trống !!!")
+                return
+
+            cursor = self.db.cursor()
+            cursor.execute("INSERT INTO device_mac_address (name, mac_address, `describe`) VALUES (%s, %s, %s)",
+                           (name, mac_address, describe))
+            self.db.commit()
+            cursor.close()
+            self.load_devices()
+            dialog.accept()
+
+        ok_button.clicked.connect(on_ok)
+        button_layout.addWidget(ok_button)
+        
+        cancel_button = QPushButton("Hủy")
+        cancel_button.clicked.connect(dialog.reject)
+        button_layout.addWidget(cancel_button)
+        
+        layout.addLayout(button_layout)
+        
+        dialog.setLayout(layout)
+        dialog.exec()
+        
+    def delete_device(self):
+        cursor = self.db.cursor()
+        for row in range(self.table.rowCount()):
+            widget = self.table.cellWidget(row, 3)
+            if isinstance(widget, QCheckBox) and widget.isChecked():
+                mac_address = self.table.item(row, 1).text()
+                cursor.execute("DELETE FROM device_mac_address WHERE mac_address = %s", (mac_address,))
+        self.db.commit()
+        cursor.close()
+        self.load_devices()
 
 
 class PhotoViewer(QtWidgets.QGraphicsView):
@@ -199,6 +430,9 @@ class MainWindow(QMainWindow):
         self.clickPosition = QPoint()
         self.setWindowTitle("Hệ thống xử lý vi phạm tốc độ")
         self.setWindowIcon(QtGui.QIcon("icon/csgt.png"))
+        self.uic.list_device_saved.setText("Danh sách thiết bị Bluetooth đã lưu")
+        self.uic.list_device_saved.clicked.connect(self.show_device_dialog)
+
 
         self.setIcon("icon/min2.png", self.uic.minbutton)
         self.setIcon("icon/connect_with_mac.png", self.uic.connect_with_mac, icon_size=(30, 35))  # Kích thước tùy chỉnh
@@ -209,6 +443,7 @@ class MainWindow(QMainWindow):
         self.setIcon("icon/deny.png", self.uic.deny_button)
         self.setIcon("icon/bluetooth.png", self.uic.connect_button)
         self.setIcon("icon/in4.png", self.uic.information_button,icon_size=(30, 35))
+        self.setIcon("icon/list.png", self.uic.list_device_saved,icon_size=(30, 35))
 
 
         
@@ -232,8 +467,59 @@ class MainWindow(QMainWindow):
         # )
         # notice.exec()
         self.uic.instruction_text.setText("Sau khi nhận được bản tin, người sử dụng có hai lựa chọn:\n- Nhấn nút 'Gửi lên Server' (nút màu xanh) nếu chấp nhận bản tin đạt chuẩn và muốn gửi lên Server.\n- Nhấn nút 'Chụp lại ảnh mới' (nút màu đỏ) nếu hình ảnh chưa đạt chuẩn và yêu cầu Máy bắn tốc độ chụp lại ảnh mới.\n\n")
-        self.uic.instruction_text.setStyleSheet("font-size: 15pt;")
+        self.uic.instruction_text.setStyleSheet("font-size: 14pt;")
         self.uic.instruction_text.setDisabled(1)
+        self.uic.bground_2.setStyleSheet("background-color: #596063; color: white; font-size: 16pt;")
+        self.show_info_in_text_edit()
+
+    def show_device_dialog(self):
+            dialog = DeviceDialog()
+            dialog.exec()
+
+    def show_info_in_text_edit(self):
+        info = """
+        Tên người vi phạm: Phạm Quốc Huy
+        Loại phương tiện: Ô tô
+        Biển kiểm soát: 18B-22212
+        Tốc độ vi phạm: 70km/h
+        Giới hạn tốc độ quy định: 50km/h
+        Thời điểm ghi nhận: 08/05/2024 R:35
+        Vị trí ghi nhận: 
+                  Vĩ độ: 11° 29' 24'' Bắc
+                  Kinh độ: 109° 27' 36'' Đông
+                  Vị trí Km480-900
+                  QL1A-Hà Nội
+        Thiết bị: 01012 Kiểm định đến 10_2020
+        Đơn vị vận hành: Phòng Cảnh sát Giao thông Công an tỉnh Hà Nội
+        """
+        
+        html_content = self.format_text_with_colors(info)
+        
+        self.uic.textEdit.setHtml(html_content)
+        self.uic.textEdit.setStyleSheet("font-size: 16pt;")
+        self.uic.textEdit.setReadOnly(True)
+
+    def format_text_with_colors(self,text):
+        lines = text.split('\n')
+        formatted_lines = []
+        
+        for line in lines:
+            if "Biển kiểm soát:" in line:
+                formatted_lines.append(f'<p><strong>Biển kiểm soát:</strong> <span style="color:red;">{line.split(":", 1)[1].strip()}</span></p>')
+            elif "Tốc độ vi phạm:" in line:
+                formatted_lines.append(f'<p><strong>Tốc độ vi phạm:</strong> <span style="color:red;">{line.split(":", 1)[1].strip()}</span></p>')
+            elif "Vị trí ghi nhận:" in line:
+                formatted_lines.append(f'<p><strong>Vị trí ghi nhận:</strong></p>')
+            elif "Vĩ độ:" in line or "Kinh độ:" in line or "Vị trí" in line or "QL1A-Hà Nội" in line:
+                formatted_lines.append(f'<p style="color:blue;">{line.strip()}</p>')
+            elif "Thiết bị:" in line:
+                formatted_lines.append(f'<p><strong>Thiết bị:</strong> <span style="color:blue;">{line.split(":", 1)[1].strip()}</span></p>')
+            elif "Đơn vị vận hành:" in line:
+                formatted_lines.append(f'<p><strong>Đơn vị vận hành:</strong> <span style="color:blue;">{line.split(":", 1)[1].strip()}</span></p>')
+            else:
+                formatted_lines.append(f'<p>{line.strip()}</p>')
+        
+        return '\n'.join(formatted_lines)
 
     def show_information(self):
         # Tạo thông báo với hướng dẫn
@@ -682,21 +968,33 @@ class SearchUI(QMainWindow):
 
     def searchbydate(self):
         dialog = QDialog(self)
-        dialog.setWindowTitle("Chọn ngày tháng")
+        dialog.setWindowTitle("Chọn khoảng ngày tháng")
         dialog.resize(800, 500)
-        calendar = QCalendarWidget(dialog)
-        btn_ok = QPushButton('OK', dialog)
+        
         layout = QVBoxLayout()
-        layout.addWidget(calendar)
+        
+        label_start = QLabel("Chọn ngày bắt đầu:")
+        calendar_start = QCalendarWidget(dialog)
+        label_end = QLabel("Chọn ngày kết thúc:")
+        calendar_end = QCalendarWidget(dialog)
+        
+        btn_ok = QPushButton('OK', dialog)
+        
+        layout.addWidget(label_start)
+        layout.addWidget(calendar_start)
+        layout.addWidget(label_end)
+        layout.addWidget(calendar_end)
         layout.addWidget(btn_ok)
         dialog.setLayout(layout)
-        def showSelectedDate():
-            selected_date = calendar.selectedDate().toString('yyyy-MM-dd')
-            self.databaseshow_partial_column('date', selected_date)
-            dialog.close()
 
-        btn_ok.clicked.connect(showSelectedDate)
+        def showSelectedDateRange():
+            start_date = calendar_start.selectedDate().toString('yyyy-MM-dd')
+            end_date = calendar_end.selectedDate().toString('yyyy-MM-dd')
+            self.databaseshow_partial_column('date', (start_date, end_date))
+            dialog.close()
+        btn_ok.clicked.connect(showSelectedDateRange)
         dialog.exec()
+        
 
     def searchbyplate(self):
         # Tạo một QDialog để hiển thị pop-up
@@ -717,57 +1015,74 @@ class SearchUI(QMainWindow):
         dialog.exec()
 
     def searchbyspeed(self):
-        # Tạo một QDialog để hiển thị pop-up
         dialog = QDialog(self)
-        dialog.setWindowTitle("Tìm kiếm theo tốc độ")
-        # Thêm một QSpinBox để nhập giá trị tốc độ vào dialog
-        speed_spinbox = QSpinBox(dialog)
-        speed_spinbox.setMinimum(0)
-        speed_spinbox.setMaximum(200)
-        speed_spinbox.setValue(60)
-        speed_spinbox.setFixedSize(300, 50)  # Đặt kích thước cho ô nhập tốc độ
-        speed_spinbox.setStyleSheet("""
-        QSpinBox::up-button {
-            width: 30px;
-            height: 30px;
-        }
-        QSpinBox::down-button {
-            width: 30px;
-            height: 30px;
-        }
-        """)
+        dialog.setWindowTitle("Tìm kiếm theo khoảng tốc độ")
+
+        # SpinBox để nhập giá trị tốc độ tối thiểu
+        min_speed_spinbox = QSpinBox(dialog)
+        min_speed_spinbox.setMinimum(0)
+        min_speed_spinbox.setMaximum(200)
+        min_speed_spinbox.setValue(60)
+        min_speed_spinbox.setFixedSize(300, 50)
+
+        # SpinBox để nhập giá trị tốc độ tối đa
+        max_speed_spinbox = QSpinBox(dialog)
+        max_speed_spinbox.setMinimum(0)
+        max_speed_spinbox.setMaximum(200)
+        max_speed_spinbox.setValue(100)
+        max_speed_spinbox.setFixedSize(300, 50)
+
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("Nhập tốc độ:"))
-        layout.addWidget(speed_spinbox)
+        layout.addWidget(QLabel("Nhập tốc độ tối thiểu:"))
+        layout.addWidget(min_speed_spinbox)
+        layout.addWidget(QLabel("Nhập tốc độ tối đa:"))
+        layout.addWidget(max_speed_spinbox)
+
         btn_ok = QPushButton('OK', dialog)
         layout.addWidget(btn_ok)
+
         def showSpeed():
-            speed_value = speed_spinbox.value()
-            self.databaseshow_partial_column('speed', speed_value)
+            min_speed_value = min_speed_spinbox.value()
+            max_speed_value = max_speed_spinbox.value()
+            self.databaseshow_partial_column('speed', (min_speed_value, max_speed_value))
             dialog.close()
+
         btn_ok.clicked.connect(showSpeed)
         dialog.setLayout(layout)
         dialog.exec()
 
     def searchbyid(self):
-        # Tạo một QDialog để hiển thị pop-up
         dialog = QDialog(self)
-        dialog.setWindowTitle("Tìm kiếm theo ID")
-        # Thêm một QSpinBox để nhập giá trị tốc độ vào dialog
-        speed_spinbox = QSpinBox(dialog)
-        speed_spinbox.setMinimum(0)
-        speed_spinbox.setValue(0)
-        speed_spinbox.setFixedSize(300, 50)  # Đặt kích thước cho ô nhập tốc độ
+        dialog.setWindowTitle("Tìm kiếm theo khoảng ID")
+        
+        # SpinBox để nhập giá trị ID tối thiểu
+        min_id_spinbox = QSpinBox(dialog)
+        min_id_spinbox.setMinimum(0)
+        min_id_spinbox.setValue(0)
+        min_id_spinbox.setFixedSize(300, 50)
+        
+        # SpinBox để nhập giá trị ID tối đa
+        max_id_spinbox = QSpinBox(dialog)
+        max_id_spinbox.setMinimum(0)
+        max_id_spinbox.setValue(100)
+        max_id_spinbox.setFixedSize(300, 50)
+        
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("Nhập ID:"))
-        layout.addWidget(speed_spinbox)
+        layout.addWidget(QLabel("Nhập ID tối thiểu:"))
+        layout.addWidget(min_id_spinbox)
+        layout.addWidget(QLabel("Nhập ID tối đa:"))
+        layout.addWidget(max_id_spinbox)
+        
         btn_ok = QPushButton('OK', dialog)
         layout.addWidget(btn_ok)
-        def showId():
-            id_value = speed_spinbox.value()
-            self.databaseshow_partial_column('id', id_value)
+        
+        def showIdRange():
+            min_id_value = min_id_spinbox.value()
+            max_id_value = max_id_spinbox.value()
+            self.databaseshow_partial_column('id', (min_id_value, max_id_value))
             dialog.close()
-        btn_ok.clicked.connect(showId)
+        
+        btn_ok.clicked.connect(showIdRange)
         dialog.setLayout(layout)
         dialog.exec()
 
@@ -863,7 +1178,7 @@ class SearchUI(QMainWindow):
             # Thực hiện hành động dựa trên lựa chọn
             self.databaseshow_partial_column(column_name, selected_value)
 
-    def databaseshow_partial_column(self, column_name, show_value):            
+    def databaseshow_partial_column(self, column_name, show_value):
         db = mysql.connector.connect(
             user='mobeo2002',
             password='doanquangluu',
@@ -872,13 +1187,19 @@ class SearchUI(QMainWindow):
         )
         cursor = db.cursor()
 
-        # Xác định kiểu dữ liệu của biến show_value
-        if isinstance(show_value, str):  # Nếu show_value là một chuỗi
-            query = f"SELECT * FROM image WHERE {column_name} LIKE %s"
-            cursor.execute(query, ("%" + show_value + "%",))
-        else:  # Nếu show_value là một số nguyên
-            query = f"SELECT * FROM image WHERE {column_name} = %s"
-            cursor.execute(query, (show_value,))
+        # Kiểm tra nếu show_value là tuple (khoảng giá trị)
+        if isinstance(show_value, tuple) and len(show_value) == 2:
+            min_value, max_value = show_value
+            query = f"SELECT * FROM image WHERE {column_name} BETWEEN %s AND %s"
+            cursor.execute(query, (min_value, max_value))
+        else:
+            # Nếu show_value không phải là tuple, xử lý như trước (chỉ trong trường hợp đặc biệt)
+            if isinstance(show_value, str):
+                query = f"SELECT * FROM image WHERE {column_name} LIKE %s"
+                cursor.execute(query, ("%" + show_value + "%",))
+            else:
+                query = f"SELECT * FROM image WHERE {column_name} = %s"
+                cursor.execute(query, (show_value,))
 
         rows = cursor.fetchall()
         db.close()
@@ -887,7 +1208,7 @@ class SearchUI(QMainWindow):
         self.uic.databasetable.setRowCount(len(rows))
         for i, row in enumerate(rows):
             for j, value in enumerate(row):
-                if j == 1:  # Nếu đây là cột hình ảnh
+                if j == 1:
                     item = self.getImageLabel(value)
                     self.uic.databasetable.setCellWidget(i, j, item)
                 elif j == 2:
@@ -897,8 +1218,8 @@ class SearchUI(QMainWindow):
                         self.uic.databasetable.setItem(i, j, QTableWidgetItem("Đồng ý"))
                 else:
                     self.uic.databasetable.setItem(i, j, QTableWidgetItem(str(value)))
-        return show_value
 
+        return show_value
 
 if __name__ == "__main__":
     import sys

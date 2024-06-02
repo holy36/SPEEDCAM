@@ -15,7 +15,7 @@ from PyQt6.QtCore import QCoreApplication
 import bluetooth
 import sys
 from time import sleep
-from PyQt6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QMessageBox, QDialog, QInputDialog, QTableWidgetItem, QTextEdit
+from PyQt6.QtWidgets import QHeaderView, QHBoxLayout, QVBoxLayout, QTableWidget, QApplication,QCheckBox, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QMessageBox, QDialog, QInputDialog, QTableWidgetItem, QTextEdit
 from PyQt6.QtGui import QPixmap, QPainter,QFont
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent, QPoint, QPointF  
 import display,search
@@ -24,6 +24,237 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import QDateTime, Qt
 import mysql.connector
 
+
+
+class DeviceDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Danh sách các Thiết bị Bluetooth đã lưu trữ")
+        self.setGeometry(100, 100, 1000, 600)
+        
+        self.db = mysql.connector.connect(
+            user='mobeo2002',
+            password='doanquangluu',
+            host='localhost',
+            database='speed_gun'
+        )
+        
+        self.initUI()
+        
+    def initUI(self):
+        layout = QVBoxLayout()
+        
+        self.table = QTableWidget()
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(["Tên", "Địa chỉ MAC", "Mô tả", "Xóa"])
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        layout.addWidget(self.table)
+        self.table.setRowHeight(0, 50)  # Thiết lập chiều cao cho hàng đầu tiên là 50 pixel
+        self.table.setRowHeight(1, 40)  # Thiết lập chiều cao cho hàng thứ hai là 40 pixel
+        # Tiếp tục thiết lập cho các hàng khác nếu cần
+        
+        # Thiết lập chiều rộng cho mỗi cột
+        self.table.setColumnWidth(0, 200)  # Thiết lập kích thước cho cột "Tên" là 200 pixel
+        self.table.setColumnWidth(1, 200)  # Thiết lập kích thước cho cột "Địa chỉ MAC" là 200 pixel
+        self.table.setColumnWidth(2, 300)  # Thiết lập kích thước cho cột "Mô tả" là 300 pixel
+        self.table.setColumnWidth(3, 100)  # Thiết lập kích thước cho cột "Xóa" là 100 pixel
+        self.load_devices()
+        
+        button_layout = QHBoxLayout()
+
+        list_connect = QPushButton("Kết nối")
+        list_connect.clicked.connect(self.connect_device)
+        button_layout.addWidget(list_connect)
+        list_connect.setFixedSize(250,100)
+        
+        add_button = QPushButton("Thêm thiết bị")
+        add_button.clicked.connect(self.add_device)
+        button_layout.addWidget(add_button)
+        add_button.setFixedSize(250,100)
+
+        edit_button = QPushButton("Sửa thông tin")
+        edit_button.clicked.connect(self.edit_device)
+        button_layout.addWidget(edit_button)
+        layout.addLayout(button_layout)
+        edit_button.setFixedSize(250,100)
+
+        delete_button = QPushButton("Xóa thiết bị")
+        delete_button.clicked.connect(self.delete_device)
+        button_layout.addWidget(delete_button)
+        delete_button.setFixedSize(250,100)
+        
+        self.setLayout(layout)
+        
+    def connect_device(self):
+            selected_device = None
+            for row in range(self.table.rowCount()):
+                if self.table.item(row, 0).isSelected() or self.table.item(row, 1).isSelected():
+                    selected_device = (self.table.item(row, 0).text(), self.table.item(row, 1).text())
+                    break
+            if selected_device:
+                QMessageBox.information(self, "Kết nối Bluetooth", f"Kết nối tới thiết bị: {selected_device[0]}\nĐịa chỉ MAC: {selected_device[1]}")
+            else:
+                QMessageBox.warning(self, "Cảnh báo", "Hãy chọn 1 thiết bị để kết nối!!!")
+
+    def edit_device(self):
+        selected_device = None
+        for row in range(self.table.rowCount()):
+            if self.table.item(row, 0).isSelected() or self.table.item(row, 1).isSelected():
+                selected_device = (self.table.item(row, 0).text(), self.table.item(row, 1).text(), self.table.item(row, 2).text())
+                break
+        if selected_device:
+            dialog = QDialog(self)
+            dialog.setWindowTitle("Sửa thông tin thiết bị")
+            dialog.setGeometry(100, 100, 300, 200)
+
+            layout = QVBoxLayout()
+
+            name_label = QLabel("Nhập tên thiết bị:")
+            layout.addWidget(name_label)
+
+            name_input = QLineEdit()
+            name_input.setText(selected_device[0])
+            layout.addWidget(name_input)
+
+            mac_label = QLabel("Nhập địa chỉ MAC:")
+            layout.addWidget(mac_label)
+
+            mac_input = QLineEdit()
+            mac_input.setText(selected_device[1])
+            layout.addWidget(mac_input)
+
+            describe_label = QLabel("Nhập mô tả (Không bắt buộc):")
+            layout.addWidget(describe_label)
+
+            describe_input = QLineEdit()
+            describe_input.setText(selected_device[2])
+            layout.addWidget(describe_input)
+
+            error_label = QLabel("")
+            error_label.setStyleSheet("color: red")
+            layout.addWidget(error_label)
+
+            button_layout = QHBoxLayout()
+
+            ok_button = QPushButton("OK")
+            def on_ok():
+                name = name_input.text()
+                mac_address = mac_input.text()
+                describe = describe_input.text() if describe_input.text() else "No description"
+
+                if not name or not mac_address:
+                    error_label.setText("Tên thiết bị và địa chỉ MAC không thể để trống")
+                    return
+
+                cursor = self.db.cursor()
+                cursor.execute("UPDATE device_mac_address SET name = %s, `describe` = %s WHERE mac_address = %s",
+                            (name, describe, mac_address))
+                self.db.commit()  # Đảm bảo lưu các thay đổi vào cơ sở dữ liệu
+                cursor.close()
+                dialog.accept()
+
+                # Sau khi người dùng chỉnh sửa và nhấn OK, ta cần tải lại danh sách thiết bị để cập nhật giao diện
+                self.load_devices()
+
+            ok_button.clicked.connect(on_ok)  # Kích hoạt hàm on_ok() khi nút OK được nhấn
+            button_layout.addWidget(ok_button)
+
+            cancel_button = QPushButton("Hủy")
+            cancel_button.clicked.connect(dialog.reject)
+            button_layout.addWidget(cancel_button)
+
+            layout.addLayout(button_layout)
+            dialog.setLayout(layout)
+            dialog.exec()
+                                
+    def load_devices(self):
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        cursor = self.db.cursor()
+        cursor.execute("SELECT name, mac_address, `describe` FROM device_mac_address")
+        devices = cursor.fetchall()
+        self.table.setRowCount(len(devices))
+        for row_num, device in enumerate(devices):
+            self.table.setItem(row_num, 0, QTableWidgetItem(device[0]))
+            self.table.setItem(row_num, 1, QTableWidgetItem(device[1]))
+            self.table.setItem(row_num, 2, QTableWidgetItem(device[2]))
+            checkbox = QCheckBox()
+            self.table.setCellWidget(row_num, 3, checkbox)
+        cursor.close()
+
+    def add_device(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Thêm thiết bị Bluetooth muốn lưu trữ")
+        dialog.setGeometry(100, 100, 300, 200)
+        
+        layout = QVBoxLayout()
+        
+        name_label = QLabel("Nhập tên thiết bị:")
+        layout.addWidget(name_label)
+
+        name_input = QLineEdit()
+        name_input.setPlaceholderText("Nhập tên thiết bị")
+        layout.addWidget(name_input)
+
+        mac_label = QLabel("Nhập địa chỉ MAC:")
+        layout.addWidget(mac_label)
+
+        mac_input = QLineEdit()
+        mac_input.setPlaceholderText("Nhập địa chỉ MAC")
+        layout.addWidget(mac_input)
+
+        describe_label = QLabel("Nhập mô tả:")
+        layout.addWidget(describe_label)
+
+        describe_input = QLineEdit()
+        describe_input.setPlaceholderText("Nhập mô tả")
+        layout.addWidget(describe_input)
+        
+        error_label = QLabel("")
+        error_label.setStyleSheet("color: red")
+        layout.addWidget(error_label)
+        
+        button_layout = QHBoxLayout()
+        
+        ok_button = QPushButton("OK")
+        def on_ok():
+            name = name_input.text()
+            mac_address = mac_input.text()
+            describe = describe_input.text() if describe_input.text() else "Không có mô tả"
+            
+            if not name or not mac_address:
+                error_label.setText("Tên thiết bị và địa chỉ không thể để trống !!!")
+                return
+
+            cursor = self.db.cursor()
+            cursor.execute("INSERT INTO device_mac_address (name, mac_address, `describe`) VALUES (%s, %s, %s)",
+                           (name, mac_address, describe))
+            self.db.commit()
+            cursor.close()
+            self.load_devices()
+            dialog.accept()
+
+        ok_button.clicked.connect(on_ok)
+        button_layout.addWidget(ok_button)
+        
+        cancel_button = QPushButton("Hủy")
+        cancel_button.clicked.connect(dialog.reject)
+        button_layout.addWidget(cancel_button)
+        
+        layout.addLayout(button_layout)
+        
+        dialog.setLayout(layout)
+        dialog.exec()
+        
+    def delete_device(self):
+        cursor = self.db.cursor()
+        for row in range(self.table.rowCount()):
+            widget = self.table.cellWidget(row, 3)
+            if isinstance(widget, QCheckBox) and widget.isChecked():
+                mac_address = self.table.item(row, 1).text()
+                cursor.execute("DELETE FROM device_mac_address WHERE mac_address = %s", (mac_address,))
+        self.db.commit()
+        cursor.close()
+        self.load_devices()
 
 
 class PhotoViewer(QtWidgets.QGraphicsView):
@@ -199,6 +430,9 @@ class MainWindow(QMainWindow):
         self.clickPosition = QPoint()
         self.setWindowTitle("Hệ thống xử lý vi phạm tốc độ")
         self.setWindowIcon(QtGui.QIcon("icon/csgt.png"))
+        self.uic.list_device_saved.setText("Danh sách thiết bị Bluetooth đã lưu")
+        self.uic.list_device_saved.clicked.connect(self.show_device_dialog)
+
 
         self.setIcon("icon/min2.png", self.uic.minbutton)
         self.setIcon("icon/connect_with_mac.png", self.uic.connect_with_mac, icon_size=(30, 35))  # Kích thước tùy chỉnh
@@ -209,6 +443,7 @@ class MainWindow(QMainWindow):
         self.setIcon("icon/deny.png", self.uic.deny_button)
         self.setIcon("icon/bluetooth.png", self.uic.connect_button)
         self.setIcon("icon/in4.png", self.uic.information_button,icon_size=(30, 35))
+        self.setIcon("icon/list.png", self.uic.list_device_saved,icon_size=(30, 35))
 
 
         
@@ -234,8 +469,12 @@ class MainWindow(QMainWindow):
         self.uic.instruction_text.setText("Sau khi nhận được bản tin, người sử dụng có hai lựa chọn:\n- Nhấn nút 'Gửi lên Server' (nút màu xanh) nếu chấp nhận bản tin đạt chuẩn và muốn gửi lên Server.\n- Nhấn nút 'Chụp lại ảnh mới' (nút màu đỏ) nếu hình ảnh chưa đạt chuẩn và yêu cầu Máy bắn tốc độ chụp lại ảnh mới.\n\n")
         self.uic.instruction_text.setStyleSheet("font-size: 14pt;")
         self.uic.instruction_text.setDisabled(1)
+        self.uic.bground_2.setStyleSheet("background-color: #596063; color: white; font-size: 16pt;")
         self.show_info_in_text_edit()
 
+    def show_device_dialog(self):
+            dialog = DeviceDialog()
+            dialog.exec()
 
     def show_info_in_text_edit(self):
         info = """
