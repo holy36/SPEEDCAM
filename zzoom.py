@@ -27,3 +27,5 @@ Hướng dẫn sử dụng:
 
 3) Trong bảng hiển thị danh sách bản tin đã được xác nhận, ở cột cuối cùng có cột "Xóa", để xóa bản tin người dùng không muốn lưu trữ trong cơ sở dữ liệu nữa.
 Để sử dụng, người dùng nhấn ô tick (Có chữ "V" là đã lựa chọn bản tin), sau khi chọn các bản tin, người dùng nhấn nút "Xóa" (ở phần tiêu đề cột) để xóa các bản tin đã chọn.
+label.setStyleSheet("* {color: qlineargradient(spread:pad, x1:0 y1:0, x2:1 y2:0, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(255, 255, 255, 255));"
+                       "background: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop:0 cyan, stop:1 blue);}");
