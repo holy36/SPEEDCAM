@@ -107,15 +107,14 @@ class DeviceDialog(QDialog):
     def show_help(self):
 # Tạo thông báo với hướng dẫn
         instructions = (
-            "1. Nhấn nút 'Bật Bluetooth' để bắt đầu quét các thiết bị Bluetooth xung quanh. Sau khi quá trình quét hoàn tất, "
-            "các thiết bị Bluetooth nhận diện được sẽ hiển thị trong 'Danh sách thiết bị Bluetooth'. Nếu thiết bị mong muốn "
-            "không xuất hiện trong danh sách, bạn có thể kết nối trực tiếp bằng cách nhập địa chỉ MAC của thiết bị và nhấn nút 'Kết nối bằng địa chỉ MAC'.\n\n"
-            "2. Trong trường hợp kết nối thất bại, hãy thử kết nối lại. Khi kết nối thành công, chờ thiết bị Máy bắn tốc độ gửi bản tin.\n\n"
-            "3. Sau khi nhận được bản tin, người sử dụng có hai lựa chọn:\n"
-            "   - Nhấn nút 'Gửi lên Server' (nút màu xanh) nếu chấp nhận bản tin đạt chuẩn và muốn gửi lên Server.\n"
-            "   - Nhấn nút 'Chụp lại ảnh mới' (nút màu đỏ) nếu hình ảnh chưa đạt chuẩn và yêu cầu Máy bắn tốc độ chụp lại ảnh mới.\n\n"
-            "4. Ngoài ra, người dùng có thể nhấn nút 'Tìm kiếm' để tìm kiếm và xem lại các bản tin đã được xác nhận."
+            "Mục đích: Để thuận tiện cho việc kết nối mà không cần nhập địa chỉ MAC hay đợi quét thiết bị xung quanh, người sử dụng có thể lưu các thiết bị Bluetooth mong muốn để thuận tiện cho việc kết nối trong tương lai.\n\n"
+            "Chức năng:\n"
+            "*   Kết nối: Người dùng có thể chọn trực tiếp vào ô chứa tên hoặc địa chỉ MAC của thiết bị muốn kết nối và nhấn nút \"Kết nối\". Sau đó, Thiết bị 2 sẽ cố gắng kết nối tới thiết bị chỉ định và tự động đóng cửa sổ danh sách.\n"
+            "*   Thêm thiết bị: Người dùng có thể thêm thiết bị mong muốn lưu bằng cách nhập tên và địa chỉ MAC của thiết bị (bắt buộc) và có thể thêm mô tả về thiết bị nếu muốn (không bắt buộc).\n"
+            "*   Sửa thông tin thiết bị: Người dùng có thể chọn trực tiếp vào ô chứa tên hoặc địa chỉ MAC của thiết bị muốn sửa thông tin và nhấn nút \"Sửa thông tin\". Tại đây, người dùng có thể thay đổi cả ba thông tin. Tuy nhiên, lưu ý rằng nếu tên và địa chỉ MAC được thay đổi trùng với thiết bị đã được lưu, thì đối tượng được sửa mặc định là thiết bị đã được lưu.\n"
+            "*   Xóa thiết bị: Người dùng có thể chọn các thiết bị bằng cách sử dụng ô checkbox ở cột cuối, sau đó nhấn nút \"Xóa thiết bị\". Thông tin về các thiết bị này sẽ bị xóa khỏi cơ sở dữ liệu."
         )
+
 
         dialog = QDialog(self)
         dialog.setWindowTitle("Hướng dẫn sử dụng chức năng Danh sách lưu Thiết bị Bluetooth")
