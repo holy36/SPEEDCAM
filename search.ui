@@ -21,7 +21,7 @@
        <number>0</number>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,25,2,2,2,2">
+       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,25,2,2,2,2,2">
         <item>
          <widget class="QPushButton" name="showall">
           <property name="minimumSize">
@@ -48,6 +48,19 @@
           </property>
           <property name="text">
            <string>Cơ sở dữ liệu Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="check_memory">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
           </property>
          </widget>
         </item>
