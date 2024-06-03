@@ -8,7 +8,6 @@ class MemoryMonitor(QMainWindow):
         super().__init__()
         
         self.initUI()
-        self.check_memory()
 
     def initUI(self):
         self.setWindowTitle("Memory Monitor")
@@ -16,47 +15,24 @@ class MemoryMonitor(QMainWindow):
         
         layout = QVBoxLayout()
         
-        self.check_button = QPushButton("Check Memory Now", self)
-        self.check_button.clicked.connect(self.show_memory_info)
+        self.check_button = QPushButton("Check Disk Space Now", self)
+        self.check_button.clicked.connect(self.show_disk_info)
         layout.addWidget(self.check_button)
         
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
 
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.check_memory)
-        self.timer.start(60000)  # Check every 60 seconds
-
-    def check_memory(self):
-        memory = psutil.virtual_memory()
-        available_memory_percentage = memory.available * 100 / memory.total
-
-        if available_memory_percentage < 10:
-            self.show_warning(available_memory_percentage, memory.available)
-
-    def show_memory_info(self):
-        memory = psutil.virtual_memory()
-        available_memory_percentage = memory.available * 100 / memory.total
-        available_memory_mb = memory.available / (1024 ** 2)
+    def show_disk_info(self):
+        disk_usage = psutil.disk_usage('/')
+        available_disk_percentage = disk_usage.free * 100 / disk_usage.total
+        available_disk_gb = disk_usage.free / (1024 ** 3)  # Convert bytes to gigabytes
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Icon.Information)
-        msg.setWindowTitle("Memory Information")
+        msg.setWindowTitle("Disk Space Information")
         msg.setText(
-            f"Available memory: {available_memory_percentage:.2f}%\n"
-            f"Remaining memory: {available_memory_mb:.2f} MB"
-        )
-        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
-        msg.exec()
-
-    def show_warning(self, available_memory_percentage, available_memory):
-        available_memory_mb = available_memory / (1024 ** 2)
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Icon.Warning)
-        msg.setWindowTitle("Memory Warning")
-        msg.setText(
-            f"Available memory is below 10%: {available_memory_percentage:.2f}%\n"
-            f"Remaining memory: {available_memory_mb:.2f} MB"
+            f"Available disk space: {available_disk_percentage:.2f}%\n"
+            f"Remaining disk space: {available_disk_gb:.2f} GB"
         )
         msg.setStandardButtons(QMessageBox.StandardButton.Ok)
         msg.exec()
