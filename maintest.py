@@ -462,6 +462,7 @@ class MainWindow(QMainWindow):
         self.uic.image_layout.addWidget(self.viewer)
         self.viewer.setPhoto(QtGui.QPixmap('test.jpg'))
         self.thread = {}
+        self.check_memory()
         self.grabGesture(Qt.GestureType.PinchGesture)
         self.uic.connect_button.clicked.connect(self.connect)
         self.uic.cancel_button.clicked.connect(self.cancel_connection)
