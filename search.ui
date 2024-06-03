@@ -117,7 +117,7 @@
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>40</height>
+              <height>100</height>
              </size>
             </property>
             <property name="font">
@@ -248,109 +248,18 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="delete_extend">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>40</height>
+              <height>100</height>
              </size>
             </property>
             <property name="text">
-             <string>Xóa dữ liệu theo khoảng:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="deletebyspeed">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>40</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Theo tốc độ trong khoảng</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="deletebydate">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>40</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Theo ngày trong khoảng</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="deletebyid">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>40</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Theo ID trong khoảng</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="deletebylocation">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>40</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Xóa theo vị trí ghi hình</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="deletebydevice">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>40</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Xóa theo thiết bị ghi hình</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="deletebystatus">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>40</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Xóa theo trạng thái xác nhận</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="deletebyvehicle">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>40</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Xóa theo phương tiện vi phạm</string>
+             <string>Xóa dữ liệu mở rộng </string>
             </property>
            </widget>
           </item>
