@@ -17,7 +17,7 @@ class MemoryMonitor(QMainWindow):
         layout = QVBoxLayout()
         
         self.check_button = QPushButton("Check Memory Now", self)
-        self.check_button.clicked.connect(self.check_memory)
+        self.check_button.clicked.connect(self.show_memory_info)
         layout.addWidget(self.check_button)
         
         container = QWidget()
@@ -34,6 +34,20 @@ class MemoryMonitor(QMainWindow):
 
         if available_memory_percentage < 10:
             self.show_warning(available_memory_percentage, memory.available)
+
+    def show_memory_info(self):
+        memory = psutil.virtual_memory()
+        available_memory_percentage = memory.available * 100 / memory.total
+        available_memory_mb = memory.available / (1024 ** 2)
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Information)
+        msg.setWindowTitle("Memory Information")
+        msg.setText(
+            f"Available memory: {available_memory_percentage:.2f}%\n"
+            f"Remaining memory: {available_memory_mb:.2f} MB"
+        )
+        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg.exec()
 
     def show_warning(self, available_memory_percentage, available_memory):
         available_memory_mb = available_memory / (1024 ** 2)
