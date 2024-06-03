@@ -15,8 +15,8 @@ from PyQt6.QtCore import QCoreApplication
 import bluetooth
 import sys
 from time import sleep
-from PyQt6.QtWidgets import QHeaderView, QHBoxLayout, QVBoxLayout, QTableWidget, QApplication,QCheckBox, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QMessageBox, QDialog, QInputDialog, QTableWidgetItem, QTextEdit
-from PyQt6.QtGui import QPixmap, QPainter,QFont
+from PyQt6.QtWidgets import QMenuBar, QMenu, QHeaderView, QHBoxLayout, QVBoxLayout, QTableWidget, QApplication,QCheckBox, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QPinchGesture, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QMessageBox, QDialog, QInputDialog, QTableWidgetItem, QTextEdit
+from PyQt6.QtGui import QPixmap, QAction, QPainter,QFont
 from PyQt6.QtCore import QObject, QThread, pyqtSignal, Qt,QEvent, QPoint, QPointF  
 import display,search
 from PyQt6.QtWidgets import (
@@ -40,9 +40,9 @@ class DeviceDialog(QDialog):
             host='localhost',
             database='speed_gun'
         )
-        
         self.initUI()
-        
+        self.initMenuBar()
+
     def initUI(self):
         layout = QVBoxLayout()
         
@@ -87,6 +87,58 @@ class DeviceDialog(QDialog):
         
         self.setLayout(layout)
         
+    def initMenuBar(self):
+        menu_bar = QMenuBar(self)
+        help_menu = menu_bar.addMenu("[Hướng dẫn]")
+        menu_bar.setFixedSize(1100,50)
+        menu_bar.setStyleSheet("background: qlineargradient(x1:0 y1:0, x2:1 y2:0, stop:0 white, stop:1 #42ddf5); color: black; font-size: 20pt; ")
+        help_action = QAction("Hiển thị hướng dẫn sử dụng", self)
+        help_action.triggered.connect(self.show_help)
+        
+        help_menu.addAction(help_action)
+     
+        # Check if layout exists and set the menu bar
+        if self.layout():
+            self.layout().setMenuBar(menu_bar)
+        else:
+            layout = QVBoxLayout()
+            self.setLayout(layout)
+            layout.setMenuBar(menu_bar)
+    def show_help(self):
+# Tạo thông báo với hướng dẫn
+        instructions = (
+            "1. Nhấn nút 'Bật Bluetooth' để bắt đầu quét các thiết bị Bluetooth xung quanh. Sau khi quá trình quét hoàn tất, "
+            "các thiết bị Bluetooth nhận diện được sẽ hiển thị trong 'Danh sách thiết bị Bluetooth'. Nếu thiết bị mong muốn "
+            "không xuất hiện trong danh sách, bạn có thể kết nối trực tiếp bằng cách nhập địa chỉ MAC của thiết bị và nhấn nút 'Kết nối bằng địa chỉ MAC'.\n\n"
+            "2. Trong trường hợp kết nối thất bại, hãy thử kết nối lại. Khi kết nối thành công, chờ thiết bị Máy bắn tốc độ gửi bản tin.\n\n"
+            "3. Sau khi nhận được bản tin, người sử dụng có hai lựa chọn:\n"
+            "   - Nhấn nút 'Gửi lên Server' (nút màu xanh) nếu chấp nhận bản tin đạt chuẩn và muốn gửi lên Server.\n"
+            "   - Nhấn nút 'Chụp lại ảnh mới' (nút màu đỏ) nếu hình ảnh chưa đạt chuẩn và yêu cầu Máy bắn tốc độ chụp lại ảnh mới.\n\n"
+            "4. Ngoài ra, người dùng có thể nhấn nút 'Tìm kiếm' để tìm kiếm và xem lại các bản tin đã được xác nhận."
+        )
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Hướng dẫn sử dụng chức năng Danh sách lưu Thiết bị Bluetooth")
+        dialog.resize(600, 400)  # Đặt kích thước của QDialog
+
+        text_edit = QTextEdit()
+        text_edit.setText(instructions)
+        text_edit.setReadOnly(True)
+        text_edit.setStyleSheet("font-size: 16px;")  # Điều chỉnh cỡ chữ ở đây
+
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+        button_box.accepted.connect(dialog.accept)
+
+        # Thiết lập kích thước nút Ok
+        ok_button = button_box.button(QDialogButtonBox.StandardButton.Ok)
+        ok_button.setFixedSize(60, 30)  # Đặt kích thước nút Ok
+
+        layout = QVBoxLayout()
+        layout.addWidget(text_edit)
+        layout.addWidget(button_box)
+
+        dialog.setLayout(layout)
+        dialog.exec()
     def connect_device(self):
         selected_device = None
         for row in range(self.table.rowCount()):
@@ -859,6 +911,19 @@ class SearchUI(QMainWindow):
         self.uic.showall.clicked.connect(self.showalldatabase)
         self.uic.bystatus.clicked.connect(self.searchbystatus)
 
+        self.uic.byname.setStyleSheet("font-size: 15pt;")
+        self.uic.bydate.setStyleSheet("font-size: 15pt;")
+        self.uic.bydevice.setStyleSheet("font-size: 15pt;")
+        self.uic.bylocation.setStyleSheet("font-size: 15pt;")
+        self.uic.byplate.setStyleSheet("font-size: 15pt;")
+        self.uic.byspeed.setStyleSheet("font-size: 15pt;")
+        self.uic.byvehicle.setStyleSheet("font-size: 15pt;")
+        self.uic.byid.setStyleSheet("font-size: 15pt;")
+        self.uic.bystatus.setStyleSheet("font-size: 15pt;")
+        self.uic.bgroundsearchby.setStyleSheet("font-size: 20pt;")
+
+        
+
         self.setIcon("icon/min2.png", self.uic.minbuttonsearch, icon_size=(30, 35))
         self.setIcon("icon/quit.png", self.uic.quitbuttonsearch, icon_size=(30, 35))  # Kích thước tùy chỉnh
         self.setIcon("icon/min.png", self.uic.maxbuttonsearch, icon_size=(30, 35))
@@ -866,6 +931,7 @@ class SearchUI(QMainWindow):
         self.setIcon("icon/search.png", self.uic.bgroundsearchby, icon_size=(30, 35))
 
         self.uic.showall.setText("Hiển thị toàn bộ")
+        self.uic.showall.setStyleSheet("font-size: 15pt;")
         self.showalldatabase()
 
 
@@ -902,6 +968,7 @@ class SearchUI(QMainWindow):
             database='speed_gun'
         )
         cursor = db.cursor()
+        self.des_scrollbar_table(self.uic.databasetable)
         cursor.execute("SELECT * FROM image")  # Select all columns from your table
         rows = cursor.fetchall()
         db.close()
@@ -1185,6 +1252,56 @@ class SearchUI(QMainWindow):
             # Thực hiện hành động dựa trên lựa chọn
             self.databaseshow_partial_column(column_name, selected_value)
 
+    def des_scrollbar_table(self, table):
+        scrollbar_style = """
+            QScrollBar:vertical {
+                border: none;
+                background: #f1f1f1;
+                width: 25px;
+                margin: 0px 0px 0px 0px;
+            }
+            QScrollBar::handle:vertical {
+                background: #34ebe5;  /* Blue color */
+                min-height: 20px;
+            }
+            QScrollBar::add-line:vertical {
+                background: #f1f1f1;
+                height: 20px;
+                subcontrol-position: bottom;
+                subcontrol-origin: margin;
+            }
+            QScrollBar::sub-line:vertical {
+                background: #f1f1f1;
+                height: 20px;
+                subcontrol-position: top;
+                subcontrol-origin: margin;
+            }
+            QScrollBar:horizontal {
+                border: none;
+                background: #f1f1f1;
+                height: 25px;
+                margin: 0px 0px 0px 0px;
+            }
+            QScrollBar::handle:horizontal {
+                background: #34ebe5;  /* Blue color */
+                min-width: 20px;
+            }
+            QScrollBar::add-line:horizontal {
+                background: #f1f1f1;
+                width: 20px;
+                subcontrol-position: right;
+                subcontrol-origin: margin;
+            }
+            QScrollBar::sub-line:horizontal {
+                background: #f1f1f1;
+                width: 20px;
+                subcontrol-position: left;
+                subcontrol-origin: margin;
+            }
+        """
+
+        table.verticalScrollBar().setStyleSheet(scrollbar_style)
+        table.horizontalScrollBar().setStyleSheet(scrollbar_style)
     def databaseshow_partial_column(self, column_name, show_value):
         db = mysql.connector.connect(
             user='mobeo2002',
@@ -1210,8 +1327,8 @@ class SearchUI(QMainWindow):
 
         rows = cursor.fetchall()
         db.close()
-
-        # Cập nhật table widget với các dòng được trả về từ cơ sở dữ liệu
+       # Cập nhật table widget với các dòng được trả về từ cơ sở dữ liệu
+        self.des_scrollbar_table(self.uic.databasetable)
         self.uic.databasetable.setRowCount(len(rows))
         for i, row in enumerate(rows):
             for j, value in enumerate(row):
