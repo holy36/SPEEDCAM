@@ -272,7 +272,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Xóa dữ liệu mở rộng </string>
+             <string>Xóa theo trường thông tin </string>
             </property>
            </widget>
           </item>

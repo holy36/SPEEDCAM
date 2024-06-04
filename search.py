@@ -208,7 +208,7 @@ class Ui_MainWindow(object):
         self.bylocation.setText(_translate("MainWindow", "Theo vị trí ghi hình"))
         self.bydevice.setText(_translate("MainWindow", "Theo thiết bị ghi hình"))
         self.byid.setText(_translate("MainWindow", "Theo ID"))
-        self.delete_extend.setText(_translate("MainWindow", "Xóa dữ liệu mở rộng "))
+        self.delete_extend.setText(_translate("MainWindow", "Xóa theo trường thông tin "))
         self.databasetable.setSortingEnabled(True)
         item = self.databasetable.verticalHeaderItem(0)
         item.setText(_translate("MainWindow", "1"))

@@ -909,6 +909,7 @@ class SearchUI(QMainWindow):
         self.uic.byid.clicked.connect(self.searchbyid)
         self.uic.showall.clicked.connect(self.showalldatabase)
         self.uic.bystatus.clicked.connect(self.searchbystatus)
+        self.uic.delete_extend.clicked.connect(self.show_delete_dialog)
 
         self.uic.byname.setStyleSheet("font-size: 15pt;")
         self.uic.bydate.setStyleSheet("font-size: 15pt;")
@@ -920,6 +921,7 @@ class SearchUI(QMainWindow):
         self.uic.byid.setStyleSheet("font-size: 15pt;")
         self.uic.bystatus.setStyleSheet("font-size: 15pt;")
         self.uic.bgroundsearchby.setStyleSheet("font-size: 20pt;")
+        self.uic.delete_extend.setStyleSheet("font-size: 20pt;")
 
         
 
@@ -928,6 +930,9 @@ class SearchUI(QMainWindow):
         self.setIcon("icon/min.png", self.uic.maxbuttonsearch, icon_size=(30, 35))
         self.setIcon("icon/database.png", self.uic.showall, icon_size=(30, 35))
         self.setIcon("icon/search.png", self.uic.bgroundsearchby, icon_size=(30, 35))
+        self.setIcon("icon/in4.png", self.uic.instruction_button_search, icon_size=(30, 35))
+        self.setIcon("icon/memory.png", self.uic.check_memory, icon_size=(30, 35))
+        self.setIcon("icon/delete.png", self.uic.delete_extend, icon_size=(30, 35))
 
         self.uic.showall.setText("Hiển thị toàn bộ")
         self.uic.showall.setStyleSheet("font-size: 15pt;")
@@ -1343,6 +1348,174 @@ class SearchUI(QMainWindow):
                     self.uic.databasetable.setItem(i, j, QTableWidgetItem(str(value)))
 
         return show_value
+
+    def show_delete_dialog(self):
+        self.dialog = QDialog(self)
+        self.dialog.setWindowTitle("Xóa theo thông tin")
+        self.dialog.setFixedSize(600, 400)
+
+        layout = QVBoxLayout(self.dialog)
+        
+        label = QLabel("Chọn phương thức xóa:", self.dialog)
+        layout.addWidget(label)
+
+        button_speed = QPushButton("Xóa bản tin theo khoảng tốc độ", self.dialog)
+        button_speed.clicked.connect(self.delete_by_speed_range)
+        layout.addWidget(button_speed)
+
+        button_time = QPushButton("Xóa bản tin theo khoảng thời gian", self.dialog)
+        button_time.clicked.connect(self.delete_by_time_range)
+        layout.addWidget(button_time)
+
+        button_id = QPushButton("Xóa bản tin theo khoảng ID", self.dialog)
+        button_id.clicked.connect(self.delete_by_id_range)
+        layout.addWidget(button_id)
+
+        button_location = QPushButton("Xóa bản tin theo vị trí ghi hình", self.dialog)
+        button_location.clicked.connect(self.delete_by_recording_location)
+        layout.addWidget(button_location)
+
+        button_device = QPushButton("Xóa bản tin theo thiết bị ghi hình", self.dialog)
+        button_device.clicked.connect(self.delete_by_recording_device)
+        layout.addWidget(button_device)
+
+        button_vehicle = QPushButton("Xóa bản tin theo phương tiện vi phạm", self.dialog)
+        button_vehicle.clicked.connect(self.delete_by_violating_vehicle)
+        layout.addWidget(button_vehicle)
+
+        button_status = QPushButton("Xóa bản tin theo trạng thái xác nhận", self.dialog)
+        button_status.clicked.connect(self.delete_by_confirmation_status)
+        layout.addWidget(button_status)
+
+        button_speed.setFixedSize(600, 40)
+        button_time.setFixedSize(600, 40)
+        button_id.setFixedSize(600, 40)
+        button_location.setFixedSize(600, 40)
+        button_device.setFixedSize(600, 40)
+        button_vehicle.setFixedSize(600, 40)
+        button_status.setFixedSize(600, 40)
+
+        cancel_button = QPushButton("Hủy", self.dialog)
+        cancel_button.setFixedSize(200, 50)
+        cancel_button.clicked.connect(self.dialog.reject)
+        
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        button_layout.addWidget(cancel_button)
+
+        layout.addLayout(button_layout)
+        self.dialog.setLayout(layout)
+
+        self.dialog.exec()
+
+    def delete_by_speed_range(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Xóa bản tin theo khoảng tốc độ")
+
+        min_speed_spinbox = QSpinBox(dialog)
+        min_speed_spinbox.setMinimum(0)
+        min_speed_spinbox.setMaximum(200)
+        min_speed_spinbox.setValue(60)
+        min_speed_spinbox.setFixedSize(300, 50)
+
+        max_speed_spinbox = QSpinBox(dialog)
+        max_speed_spinbox.setMinimum(0)
+        max_speed_spinbox.setMaximum(200)
+        max_speed_spinbox.setValue(100)
+        max_speed_spinbox.setFixedSize(300, 50)
+
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel("Nhập tốc độ tối thiểu:"))
+        layout.addWidget(min_speed_spinbox)
+        layout.addWidget(QLabel("Nhập tốc độ tối đa:"))
+        layout.addWidget(max_speed_spinbox)
+
+        btn_ok = QPushButton('Xóa', dialog)
+        layout.addWidget(btn_ok)
+
+        def deleteSpeed():
+            min_speed_value = min_speed_spinbox.value()
+            max_speed_value = max_speed_spinbox.value()
+            speed_range=(min_speed_value,max_speed_value)
+            # Gọi hàm delete_by_speed_range với min_speed_value và max_speed_value
+            self.delete_by_number_range('speed',speed_range)
+            dialog.close()
+        btn_ok.clicked.connect(deleteSpeed)
+        dialog.setLayout(layout)
+        dialog.exec()
+    
+    def delete_by_number_range(self,column_name,number_range):
+        db = mysql.connector.connect(
+            user='mobeo2002',
+            password='doanquangluu',
+            host='localhost',
+            database='speed_gun'
+        )
+        cursor = db.cursor()
+
+        min_value, max_value = number_range
+
+        query = f"DELETE FROM image WHERE {column_name} BETWEEN %s AND %s"
+        cursor.execute(query, (min_value, max_value))
+
+        db.commit()
+        cursor.close()
+        db.close()
+        self.dialog.accept()
+        self.showalldatabase()
+
+
+    
+    def delete_by_time_range(self):
+        QMessageBox.information(self, "Info", "Delete by time range clicked")
+
+    def delete_by_id_range(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Xóa bản tin theo khoảng ID")
+
+        min_number_box = QSpinBox(dialog)
+        min_number_box.setMinimum(0)
+        min_number_box.setMaximum(1000)
+        min_number_box.setValue(0)
+        min_number_box.setFixedSize(300, 50)
+
+        max_number_box = QSpinBox(dialog)
+        max_number_box.setMinimum(0)
+        max_number_box.setMaximum(1000)
+        max_number_box.setValue(50)
+        max_number_box.setFixedSize(300, 50)
+
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel("Nhập ID tối thiểu:"))
+        layout.addWidget(min_number_box)
+        layout.addWidget(QLabel("Nhập ID tối đa:"))
+        layout.addWidget(max_number_box)
+
+        btn_ok = QPushButton('Xóa', dialog)
+        layout.addWidget(btn_ok)
+
+        def deleteSpeed():
+            min_id_value = min_number_box.value()
+            max_id_value = max_number_box.value()
+            id_range=(min_id_value,max_id_value)
+            # Gọi hàm delete_by_id_range với min_id_value và max_id_value
+            self.delete_by_number_range('id',id_range)
+            dialog.close()
+        btn_ok.clicked.connect(deleteSpeed)
+        dialog.setLayout(layout)
+        dialog.exec()
+
+    def delete_by_recording_location(self):
+        QMessageBox.information(self, "Info", "Delete by recording location clicked")
+
+    def delete_by_recording_device(self):
+        QMessageBox.information(self, "Info", "Delete by recording device clicked")
+
+    def delete_by_violating_vehicle(self):
+        QMessageBox.information(self, "Info", "Delete by violating vehicle clicked")
+
+    def delete_by_confirmation_status(self):
+        QMessageBox.information(self, "Info", "Delete by confirmation status clicked")
 
 if __name__ == "__main__":
     import sys
