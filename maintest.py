@@ -934,7 +934,7 @@ class SearchUI(QMainWindow):
             messenger_memory.setWindowTitle("Cảnh báo")
             messenger_memory.setStyleSheet("QPushButton { min-width: 100px; min-height: 40px; }" 
                                 "QLabel { color: red; font-size: 16pt;}")
-            messenger_memory.setText("Bộ nhớ lưu trữ khả dụng quá thấp (dưới 5%). \nChương trình sẽ tự động ngắt bởi bộ nhớ lưu trữ còn lại quá thấp!!!\n Vui lòng giải phóng bộ nhớ.")
+            messenger_memory.setText("Bộ nhớ lưu trữ khả dụng quá thấp (dưới 5%). \nChương trình sẽ tự động ngắt bởi bộ nhớ lưu trữ còn lại quá thấp!!!\n Vui lòng giải phóng bộ nhớ.\n Lưu ý: Để giải phóng bộ nhớ cần xóa hình ảnh ở thư mục có đường dẫn sau: ")
             messenger_memory.exec()
             sys.exit()
         elif available_disk_percentage < 10:
