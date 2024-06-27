@@ -855,7 +855,6 @@ class ThreadClass(QtCore.QThread):
         # print('Starting thread...', self.index,self.mac_id)
         self.connect_status.emit(4)
         counter = 0
-            
         try:
             self.connect_status.emit(5)
             client = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
@@ -873,11 +872,9 @@ class ThreadClass(QtCore.QThread):
                 # print(f"Received: {data.decode('utf-8')}")
                 # print(self.connect_status)
                 self.signal.emit(f"{data.decode('utf-8')}")
-
         except OSError:
             self.connect_status.emit(3)
             pass
-
         # print("Disconnected")
         self.connect_status.emit(0)
 
@@ -985,9 +982,9 @@ class SearchUI(QMainWindow):
                     self.uic.databasetable.setCellWidget(i,j,item)
                 elif j == 2:
                     if value == 0:
-                        self.uic.databasetable.setItem(i, j, QTableWidgetItem("Từ chối"))
+                        self.uic.databasetable.setItem(i, j, QTableWidgetItem("Chụp lại ảnh mới"))
                     else:
-                        self.uic.databasetable.setItem(i, j, QTableWidgetItem("Đồng ý"))
+                        self.uic.databasetable.setItem(i, j, QTableWidgetItem("Gửi lên Server"))
                 else:
                     self.uic.databasetable.setItem(i, j, QTableWidgetItem(str(value)))
 
