@@ -1043,6 +1043,15 @@ class SearchUI(QMainWindow):
         self.uic.searchbyother.setStyleSheet("font-size: 20pt;")
         self.uic.delete_extend.setStyleSheet("font-size: 20pt;")
         self.uic.bground_ui.setStyleSheet("font-size: 20pt;")
+        self.uic.delete_extend.setStyleSheet("background-color: #f7a6a6; color: black; font-size: 20pt;")
+        self.uic.bgroundsearchby.setStyleSheet("background-color: #a6f7d8; color: black; font-size: 20pt;")
+        self.uic.bgroundsearch.setText("Cơ sở dữ liệu Thiết bị truy cập trực tiếp máy bắn - SPR Lab")
+        self.uic.searchbyother.setStyleSheet("background-color: #a6f7d8; color: black; font-size: 20pt;")
+        self.uic.bground_ui.setStyleSheet("background-color: #edd640; color: black; font-size: 20pt;")
+
+    
+
+
 
 
         
@@ -1839,6 +1848,12 @@ class SettingUI(QMainWindow):
         self.setIcon("icon/setting.png", self.uic.fixed_set, icon_size=(30, 35))
         self.setIcon("icon/setting.png", self.uic.auto_connecT_setting, icon_size=(30, 35))
         self.setIcon("icon/ui.png", self.uic.bground_ui, icon_size=(30, 35))
+
+
+        self.uic.fixed_set.setStyleSheet("background-color: #f7a6a6; color: black; font-size: 20pt;")
+        self.uic.auto_connecT_setting.setStyleSheet("background-color: #a6f7d8; color: black; font-size: 20pt;")
+        self.uic.bground_setting.setStyleSheet("background-color: #a6f7d8; color: black; font-size: 20pt;")
+        self.uic.bground_ui.setStyleSheet("background-color: #edd640; color: black; font-size: 20pt;")
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_time)

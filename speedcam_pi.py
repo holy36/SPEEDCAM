@@ -1088,7 +1088,7 @@ class SearchUI(QMainWindow):
         self.setWindowTitle("Cơ sở dữ liệu hệ thống")
         self.setWindowIcon(QtGui.QIcon(resource_path("icon/csgt.png")))
         self.uic.byname.clicked.connect(self.searchbyname)
-        self.uic.bydate.clicked.connect(self.searchbydate)
+        self.uic.bydate.clicked.connect(self.searchbydatetime)
         self.uic.bydevice.clicked.connect(self.searchbydevice)
         self.uic.bylocation.clicked.connect(self.searchbylocation)
         self.uic.byplate.clicked.connect(self.searchbyplate)
