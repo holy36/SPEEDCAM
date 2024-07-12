@@ -463,8 +463,6 @@ class MainWindow(QMainWindow):
         self.uic.quitbutton.clicked.connect(self.exit)
         self.uic.minbutton.clicked.connect(self.minimize_window)
         self.uic.maxbutton.clicked.connect(self.maximize_window)
-        self.uic.search_ui.clicked.connect(self.search_ui_show)
-        self.uic.setting_ui.clicked.connect(self.setting_ui_show)
         self.uic.bground.setStyleSheet("background-color: #949084; color: white;")
         self.uic.bground.setText("Thiết bị truy cập trực tiếp máy bắn tốc độ - SPR Lab")
         self.uic.connect_with_mac.setText("Kết nối tới địa chỉ")
@@ -488,15 +486,11 @@ class MainWindow(QMainWindow):
         self.setIcon("icon/connect_with_mac.png", self.uic.connect_with_mac, icon_size=(30, 35))  # Kích thước tùy chỉnh
         self.setIcon("icon/quit.png", self.uic.quitbutton, icon_size=(30, 35))  # Kích thước tùy chỉnh
         self.setIcon("icon/min.png", self.uic.maxbutton, icon_size=(30, 35))
-        self.setIcon("icon/search.png", self.uic.search_button, icon_size=(30, 35))
         self.setIcon("icon/accept.png", self.uic.accept_button)
         self.setIcon("icon/deny.png", self.uic.deny_button)
         self.setIcon("icon/bluetooth.png", self.uic.connect_button)
         self.setIcon("icon/in4.png", self.uic.information_button,icon_size=(30, 35))
         self.setIcon("icon/list.png", self.uic.list_device_saved,icon_size=(30, 35))
-        self.setIcon("icon/setting.png", self.uic.setting_ui, icon_size=(30, 35))
-        self.setIcon("icon/search.png", self.uic.search_ui, icon_size=(30, 35))
-        self.setIcon("icon/ui.png", self.uic.search_button, icon_size=(30, 35))
 
 
 
@@ -631,7 +625,7 @@ class MainWindow(QMainWindow):
         # Định dạng theo hh:mm:ss AP dd/MM/yyyy
         time_part = current_datetime.toString("hh:mm AP")
         date_part = current_datetime.toString("dd/MM/yyyy")
-        current_time = f"Thời gian: {time_part}\nNgày: {date_part}"
+        current_time = f"{time_part} - {date_part}"
         # Cập nhật QLabel với thời gian đã định dạng
         self.uic.time_label.setText(current_time)
 

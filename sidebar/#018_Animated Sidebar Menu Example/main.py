@@ -1,4 +1,4 @@
-import sys
+e:\New folder (4)\PyQt5-Video-Book-main\PyQt5-Video-Book-main\#018_Animated Sidebar Menu Example\main_ui.pyimport sys
 from PyQt6.QtWidgets import QMainWindow, QApplication, QLabel, QListWidgetItem, QWidget, QGridLayout
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon, QPixmap, QFont

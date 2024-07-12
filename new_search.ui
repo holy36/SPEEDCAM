@@ -21,20 +21,7 @@
        <number>0</number>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,25,2,2,2,2,2">
-        <item>
-         <widget class="QPushButton" name="showall">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="25,2,2,2,2,2">
         <item>
          <widget class="QPushButton" name="bgroundsearch">
           <property name="enabled">
@@ -119,50 +106,47 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,30">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,30">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="QPushButton" name="bground_ui">
-            <property name="enabled">
-             <bool>false</bool>
+           <spacer name="verticalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
             </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="showall">
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>100</height>
+              <height>30</height>
              </size>
             </property>
             <property name="text">
-             <string>Giao diện: </string>
+             <string/>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="main_ui">
-            <property name="minimumSize">
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
              <size>
-              <width>0</width>
+              <width>20</width>
               <height>40</height>
              </size>
             </property>
-            <property name="text">
-             <string>Giao diện chính</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="setting_ui">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>40</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Cài đặt</string>
-            </property>
-           </widget>
+           </spacer>
           </item>
           <item>
            <widget class="QPushButton" name="bgroundsearchby">
@@ -238,6 +222,19 @@
            </widget>
           </item>
           <item>
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
            <widget class="QPushButton" name="delete_extend">
             <property name="enabled">
              <bool>true</bool>
@@ -252,6 +249,19 @@
              <string>Xóa theo trường thông tin </string>
             </property>
            </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
           </item>
           <item>
            <widget class="QLabel" name="time_label_search">
