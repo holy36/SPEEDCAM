@@ -21,7 +21,7 @@
        <number>0</number>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="25,2,2,2">
+       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="25,2,2">
         <item>
          <widget class="QPushButton" name="bgroundsearch">
           <property name="enabled">
@@ -53,19 +53,6 @@
         </item>
         <item>
          <widget class="QPushButton" name="instruction_button_search">
-          <property name="minimumSize">
-           <size>
-            <width>40</width>
-            <height>30</height>
-           </size>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="quitbuttonsearch">
           <property name="minimumSize">
            <size>
             <width>40</width>
