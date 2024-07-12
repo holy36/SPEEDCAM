@@ -80,7 +80,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,30">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
@@ -374,11 +374,6 @@
           <column>
            <property name="text">
             <string>Trạng thái</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Tên</string>
            </property>
           </column>
           <column>
