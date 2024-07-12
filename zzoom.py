@@ -33,3 +33,7 @@ Ngoài chức năng xóa bằng cách chọn bản tin như thông thường, đ
 
 
 
+Xác nhận
+Tìm kiếm
+Cài đặt
+Lựa chọn
